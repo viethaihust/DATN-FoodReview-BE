@@ -20,4 +20,7 @@ export class CreatePostDto {
   @IsMongoId()
   @IsNotEmpty()
   category: string;
+
+  @IsString({ each: true })
+  comments: string[];
 }

@@ -3,10 +3,6 @@ import { IsOptional, IsString, IsInt, Min } from 'class-validator';
 export class FindAllPostsQueryDto {
   @IsOptional()
   @IsString()
-  id?: string;
-
-  @IsOptional()
-  @IsString()
   categoryName?: string;
 
   @IsOptional()

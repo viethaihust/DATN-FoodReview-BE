@@ -4,6 +4,7 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Param,
   Post,
   Query,
 } from '@nestjs/common';
@@ -33,6 +34,19 @@ export class PostsController {
   async findAll(@Query() queryParams: FindAllPostsQueryDto): Promise<any> {
     try {
       const result = await this.postsService.findAll(queryParams);
+      return {
+        success: 'Fetch các bài post thành công',
+        result,
+      };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string): Promise<any> {
+    try {
+      const result = await this.postsService.findOne(id);
       return {
         success: 'Fetch bài post thành công',
         result,

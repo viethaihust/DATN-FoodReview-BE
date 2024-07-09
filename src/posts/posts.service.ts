@@ -4,6 +4,7 @@ import { Model, Types } from 'mongoose';
 import { Post } from './post.model';
 import { CreatePostDto } from './dto/createPost.dto';
 import { Category } from 'src/categories/category.model';
+import { FindAllPostsQueryDto } from './dto/findAllPost.dto';
 
 @Injectable()
 export class PostsService {
@@ -22,23 +23,19 @@ export class PostsService {
     return await newPost.save();
   }
 
-  async findAll(
-    queryParams: any,
-  ): Promise<
-    { posts: Post[]; totalPosts: number } | Post | { randomPosts: Post[] }
-  > {
-    const { id, categoryName, page = 1, pageSize = 5, random } = queryParams;
-
-    if (id) {
-      const post = await this.postModel
-        .findById(id)
-        .populate('category')
-        .exec();
-      if (!post) {
-        throw new NotFoundException('Không tìm thấy bài post');
-      }
-      return post;
+  async findOne(id: string): Promise<Post> {
+    const post = await this.postModel
+      .findById(id)
+      .populate('category')
+      .exec();
+    if (!post) {
+      throw new NotFoundException('Không tìm thấy bài post');
     }
+    return post;
+  }
+
+  async findAll(queryParams: FindAllPostsQueryDto): Promise<{ posts: Post[]; totalPosts: number } | { randomPosts: Post[] }> {
+    const { categoryName, page = 1, pageSize = 5, random } = queryParams;
 
     let query: any = {};
     if (categoryName) {

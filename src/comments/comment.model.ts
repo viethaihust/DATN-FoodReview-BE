@@ -1,20 +1,23 @@
-import { Schema, Document } from 'mongoose';
-import { User } from 'src/users/user.model';
+import { Schema, Document, Types } from 'mongoose';
 
 export interface Comment extends Document {
-  user: User;
+  _id: Types.ObjectId;
+  user: Types.ObjectId;
   content: string;
   likes: number;
-  replies: Comment[];
-  postId?: string;
-  parentCommentId?: string;
+  likedBy: Types.ObjectId[];
+  replies: Types.ObjectId[];
+  postId?: Types.ObjectId;
+  parentCommentId?: Types.ObjectId;
 }
 
 export const CommentSchema = new Schema(
   {
+    _id: { type: Schema.Types.ObjectId, auto: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     content: { type: String, required: true },
     likes: { type: Number, default: 0 },
+    likedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     replies: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
     postId: { type: Schema.Types.ObjectId, ref: 'Post' },
     parentCommentId: { type: Schema.Types.ObjectId, ref: 'Comment' },

@@ -1,24 +1,22 @@
-import { Schema, Document } from 'mongoose';
-import { Category } from 'src/categories/category.model';
-import { Comment } from 'src/comments/comment.model';
+import { Schema, Document, Types } from 'mongoose';
 
 export interface Post extends Document {
+  _id: Types.ObjectId;
   title: string;
   summary: string;
   content: string;
   image: string;
-  category: Category;
-  comments: Comment[];
+  category: Types.ObjectId;
 }
 
 export const PostSchema = new Schema(
   {
+    _id: { type: Schema.Types.ObjectId },
     title: { type: String, required: true },
     summary: { type: String, required: true },
     content: { type: String, required: true },
     image: { type: String, required: true },
     category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
-    comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
   },
   { timestamps: true },
 );

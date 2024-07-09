@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model } from 'mongoose';
+import { Document, Model, Types } from 'mongoose';
 import { CreateCommentDto } from './dto/createComment.dto';
 import { Comment } from './comment.model';
 import { Post } from 'src/posts/post.model';
@@ -45,15 +45,6 @@ export class CommentsService {
       parentCommentId,
     }) as Comment & Document<any, any, Comment>;
 
-    if (postId) {
-      const post = await this.postModel.findById(postId);
-      if (!post) {
-        throw new NotFoundException('Post not found');
-      }
-      post.comments.push(newComment._id);
-      await post.save();
-    }
-
     if (parentCommentId) {
       const parentComment = await this.commentModel.findById(parentCommentId);
       if (!parentComment) {
@@ -67,22 +58,47 @@ export class CommentsService {
     return savedComment.populate('user', 'name');
   }
 
-  async like(id: string): Promise<Comment> {
-    const comment = await this.findOne(id);
-    comment.likes += 1;
-    return comment.save();
+  async like(id: string, userId: string): Promise<Comment> {
+    try {
+      const comment = await this.findOne(id);
+
+      if (!comment) {
+        throw new Error('Comment not found');
+      }
+
+      const userObjectId = new Types.ObjectId(userId);
+      const userLiked = comment.likedBy.some((likedByUserId) =>
+        likedByUserId.equals(userObjectId),
+      );
+
+      if (userLiked) {
+        comment.likes -= 1;
+        comment.likedBy = comment.likedBy.filter(
+          (likedByUserId) => !likedByUserId.equals(userObjectId),
+        );
+      } else {
+        comment.likes += 1;
+        comment.likedBy.push(userObjectId);
+      }
+
+      await comment.save();
+
+      return comment;
+    } catch (error) {
+      throw new Error(`Failed to like/unlike comment: ${error.message}`);
+    }
   }
 
-  async reply(
-    id: string,
-    createCommentDto: CreateCommentDto,
-  ): Promise<Comment> {
-    const comment = await this.findOne(id);
-    const reply = new this.commentModel(createCommentDto);
-    comment.replies.push(reply);
-    await reply.save();
-    return comment.save();
-  }
+  // async reply(
+  //   id: string,
+  //   createCommentDto: CreateCommentDto,
+  // ): Promise<Comment> {
+  //   const comment = await this.findOne(id);
+  //   const reply = new this.commentModel(createCommentDto);
+  //   comment.replies.push(reply);
+  //   await reply.save();
+  //   return comment.save();
+  // }
 
   async delete(id: string): Promise<Comment> {
     return this.commentModel.findByIdAndDelete(id).exec();

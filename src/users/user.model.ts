@@ -1,17 +1,17 @@
-import { Schema, Document } from 'mongoose';
-import { Comment } from 'src/comments/comment.model';
-import { Post } from 'src/posts/post.model';
+import { Schema, Document, Types } from 'mongoose';
 
 export interface User extends Document {
+  _id: Types.ObjectId;
   email: string;
   password: string;
   name: string;
-  posts: Post[];
-  comments: Comment[];
+  posts: Types.ObjectId[];
+  comments: Types.ObjectId[];
 }
 
 export const UserSchema = new Schema(
   {
+    _id: { type: Schema.Types.ObjectId },
     email: { type: String, required: true },
     password: { type: String, required: true },
     name: { type: String, required: true },

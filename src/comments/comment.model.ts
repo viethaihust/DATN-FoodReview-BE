@@ -1,7 +1,6 @@
 import { Schema, Document, Types } from 'mongoose';
 
 export interface Comment extends Document {
-  _id: Types.ObjectId;
   user: Types.ObjectId;
   content: string;
   likes: number;
@@ -13,7 +12,6 @@ export interface Comment extends Document {
 
 export const CommentSchema = new Schema(
   {
-    _id: { type: Schema.Types.ObjectId, auto: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     content: { type: String, required: true },
     likes: { type: Number, default: 0 },

@@ -3,15 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model, Types } from 'mongoose';
 import { CreateCommentDto } from './dto/createComment.dto';
 import { Comment } from './comment.model';
-import { Post } from 'src/posts/post.model';
-import { User } from 'src/users/user.model';
 
 @Injectable()
 export class CommentsService {
   constructor(
     @InjectModel('Comment') private readonly commentModel: Model<Comment>,
-    @InjectModel('Post') private readonly postModel: Model<Post>,
-    @InjectModel('User') private readonly postUser: Model<User>,
   ) {}
 
   async findAll(postId?: string): Promise<Comment[]> {

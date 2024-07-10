@@ -10,7 +10,6 @@ import {
 } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/createComment.dto';
-import { User } from 'src/users/user.model';
 
 @Controller('comments')
 export class CommentsController {

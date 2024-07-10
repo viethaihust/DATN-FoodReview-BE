@@ -1,7 +1,6 @@
 import { Schema, Document, Types } from 'mongoose';
 
 export interface Post extends Document {
-  _id: Types.ObjectId;
   title: string;
   summary: string;
   content: string;
@@ -11,7 +10,6 @@ export interface Post extends Document {
 
 export const PostSchema = new Schema(
   {
-    _id: { type: Schema.Types.ObjectId },
     title: { type: String, required: true },
     summary: { type: String, required: true },
     content: { type: String, required: true },

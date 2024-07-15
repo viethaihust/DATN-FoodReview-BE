@@ -10,16 +10,19 @@ import {
 } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/createComment.dto';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('comments')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
+  @Public()
   @Get()
   async findAll(@Query('postId') postId?: string): Promise<any> {
     return this.commentsService.findAll(postId);
   }
 
+  @Public()
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.commentsService.findOne(id);
@@ -46,6 +49,7 @@ export class CommentsController {
   //   return this.commentsService.reply(id, createCommentDto);
   // }
 
+  @Public()
   @Delete(':id')
   delete(@Param('id') id: string) {
     return this.commentsService.delete(id);

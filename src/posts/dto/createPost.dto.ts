@@ -21,6 +21,7 @@ export class CreatePostDto {
   @IsNotEmpty()
   category: string;
 
-  @IsString({ each: true })
-  comments: string[];
+  @IsMongoId()
+  @IsNotEmpty()
+  subCategory: string;
 }

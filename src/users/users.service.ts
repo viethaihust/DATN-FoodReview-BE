@@ -1,17 +1,25 @@
-import { ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { User } from './user.model';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/createUser.dto';
 import { hash } from 'bcrypt';
+import { User } from './schema/user.schema';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<User>,
+  ) {}
 
   async create(dto: CreateUserDto): Promise<Omit<User, 'password'>> {
     try {
-      const existingUser = await this.userModel.findOne({ email: dto.email }).exec();
+      const existingUser = await this.userModel
+        .findOne({ email: dto.email })
+        .exec();
       if (existingUser) {
         throw new ConflictException('Email này đã được sử dụng');
       }
@@ -26,7 +34,10 @@ export class UsersService {
       const { _id, email, name } = result.toObject();
       return { _id, email, name } as Omit<User, 'password'>;
     } catch (error) {
-      throw new InternalServerErrorException('Tạo user thất bại', error.message);
+      throw new InternalServerErrorException(
+        'Tạo user thất bại',
+        error.message,
+      );
     }
   }
 

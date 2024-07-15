@@ -11,6 +11,7 @@ import {
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/createPost.dto';
 import { FindAllPostsQueryDto } from './dto/findAllPost.dto';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('posts')
 export class PostsController {
@@ -21,8 +22,7 @@ export class PostsController {
     try {
       const newPost = await this.postsService.createPost(createPostDto);
       return {
-        success: 'Tạo bài post thành công',
-        status: HttpStatus.CREATED,
+        status: HttpStatus.OK,
         newPost,
       };
     } catch (error) {
@@ -30,12 +30,13 @@ export class PostsController {
     }
   }
 
+  @Public()
   @Get()
   async findAll(@Query() queryParams: FindAllPostsQueryDto): Promise<any> {
     try {
       const result = await this.postsService.findAll(queryParams);
       return {
-        success: 'Fetch các bài post thành công',
+        status: HttpStatus.OK,
         result,
       };
     } catch (error) {
@@ -43,12 +44,13 @@ export class PostsController {
     }
   }
 
+  @Public()
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<any> {
     try {
       const result = await this.postsService.findOne(id);
       return {
-        success: 'Fetch bài post thành công',
+        status: HttpStatus.OK,
         result,
       };
     } catch (error) {

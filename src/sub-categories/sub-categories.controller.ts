@@ -5,18 +5,18 @@ import {
   HttpStatus,
   Param,
 } from '@nestjs/common';
-import { CategoriesService } from './categories.service';
+import { SubCategoriesService } from './sub-categories.service';
 import { Public } from 'src/auth/decorators/public.decorator';
 
-@Controller('categories')
-export class CategoriesController {
-  constructor(private readonly categoriesService: CategoriesService) {}
+@Controller('sub-categories')
+export class SubCategoriesController {
+  constructor(private readonly subCategoriesService: SubCategoriesService) {}
 
   @Public()
   @Get()
   async findAll() {
     try {
-      const result = await this.categoriesService.findAll();
+      const result = await this.subCategoriesService.findAll();
       return {
         status: HttpStatus.OK,
         result,
@@ -30,7 +30,7 @@ export class CategoriesController {
   @Get(':slug')
   async findOne(@Param('slug') slug: string) {
     try {
-      const result = await this.categoriesService.findOneBySlug(slug);
+      const result = await this.subCategoriesService.findOneBySlug(slug);
       return {
         status: HttpStatus.OK,
         result,

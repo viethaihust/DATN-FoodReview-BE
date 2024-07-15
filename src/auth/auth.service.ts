@@ -1,11 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
-import { UsersService } from 'src/users/users.service';
-import { User } from 'src/users/user.model';
 import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { UsersService } from 'src/users/users.service';
+import { User } from 'src/users/schema/user.schema';
 
-const EXPIRE_TIME = 20 * 1000;
+const EXPIRE_TIME = 60 * 60 * 24 * 1000;
 
 @Injectable()
 export class AuthService {
@@ -36,12 +36,12 @@ export class AuthService {
     };
 
     const accessToken = await this.jwtService.signAsync(payload, {
-      expiresIn: '20s',
+      expiresIn: '24h',
       secret: process.env.JWT_SECRET_KEY,
     });
 
     const refreshToken = await this.jwtService.signAsync(payload, {
-      expiresIn: '7d',
+      expiresIn: '30d',
       secret: process.env.JWT_REFRESH_TOKEN_KEY,
     });
 
@@ -63,11 +63,11 @@ export class AuthService {
 
     return {
       accessToken: await this.jwtService.signAsync(payload, {
-        expiresIn: '20s',
+        expiresIn: '24h',
         secret: process.env.JWT_SECRET_KEY,
       }),
       refreshToken: await this.jwtService.signAsync(payload, {
-        expiresIn: '7d',
+        expiresIn: '30d',
         secret: process.env.JWT_REFRESH_TOKEN_KEY,
       }),
       expiresIn: new Date().setTime(new Date().getTime() + EXPIRE_TIME),

@@ -1,17 +1,24 @@
-import { IsOptional, IsString, IsInt, Min } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class FindAllPostsQueryDto {
   @IsOptional()
   @IsString()
-  categoryName?: string;
+  categorySlug?: string;
 
   @IsOptional()
-  @IsInt()
+  @IsString()
+  subCategorySlug?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
   @Min(1)
   page?: number;
 
   @IsOptional()
-  @IsInt()
+  @Type(() => Number)
+  @IsNumber()
   @Min(1)
   pageSize?: number;
 

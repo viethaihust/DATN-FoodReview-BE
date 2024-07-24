@@ -9,6 +9,7 @@ import { CommentsModule } from './comments/comments.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { SubCategoriesModule } from './sub-categories/sub-categories.module';
+import { AtGuard } from './common/guards/accessToken.guard';
 
 @Module({
   imports: [
@@ -25,6 +26,12 @@ import { SubCategoriesModule } from './sub-categories/sub-categories.module';
     SubCategoriesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: 'APP_GUARD',
+      useClass: AtGuard,
+    },
+  ],
 })
 export class AppModule {}

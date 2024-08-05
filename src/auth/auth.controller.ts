@@ -36,7 +36,6 @@ export class AuthController {
   @UseGuards(RtGuard)
   @Post('logout')
   async logout(@Request() req) {
-    console.log(req.user);
     const result = await this.authService.logout(
       req.user.refreshToken as string,
     );

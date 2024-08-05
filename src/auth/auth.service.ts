@@ -135,8 +135,11 @@ export class AuthService {
 
   async login(dto: LoginDto): Promise<{
     user: Omit<User, 'password'>;
-    backendTokens: { accessToken: string; refreshToken: string };
-    expiresIn: number;
+    backendTokens: {
+      accessToken: string;
+      refreshToken: string;
+      expiresIn: number;
+    };
   }> {
     const user = await this.validateUser(dto);
 
@@ -165,8 +168,8 @@ export class AuthService {
       backendTokens: {
         accessToken,
         refreshToken,
+        expiresIn: decodeAccessToken.exp,
       },
-      expiresIn: decodeAccessToken.exp,
 
       // sai cách viết xem lại thời gian tạo token xong thì thời gian hết hạn là bao lâu
       // expiresIn: new Date().setTime(new Date().getTime() + EXPIRE_TIME),
@@ -217,8 +220,6 @@ export class AuthService {
       refreshTokenNew,
       process.env.JWT_REFRESH_TOKEN_KEY as string,
     );
-
-    console.log(decodeRefreshToken);
 
     // lưu refreshToken mới
     await new this.refreshTokenModel({

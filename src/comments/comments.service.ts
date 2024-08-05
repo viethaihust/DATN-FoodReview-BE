@@ -15,7 +15,11 @@ export class CommentsService {
     if (postId) {
       query.postId = postId;
     }
-    return this.commentModel.find(query).populate('user replies').exec();
+    return this.commentModel
+      .find(query)
+      .populate('user', '_id name email')
+      .populate('replies')
+      .exec();
   }
 
   async findOne(id: string): Promise<Comment> {

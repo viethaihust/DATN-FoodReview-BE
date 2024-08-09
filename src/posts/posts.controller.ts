@@ -30,7 +30,6 @@ export class PostsController {
     }
   }
 
-  @Public()
   @Get()
   async findAll(@Query() queryParams: FindAllPostsQueryDto): Promise<any> {
     try {

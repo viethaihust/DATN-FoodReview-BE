@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { SubCategoriesModule } from './sub-categories/sub-categories.module';
 import { AtGuard } from './common/guards/accessToken.guard';
 import { UploadModule } from './upload/upload.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { UploadModule } from './upload/upload.module';
     AuthModule,
     SubCategoriesModule,
     UploadModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [

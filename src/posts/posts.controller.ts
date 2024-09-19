@@ -24,7 +24,6 @@ export class PostsController {
     };
   }
 
-  @Public()
   @Get()
   async findAll(@Query() queryParams: FindAllPostsQueryDto): Promise<any> {
     const result = await this.postsService.findAll(queryParams);

@@ -10,6 +10,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { SubCategoriesModule } from './sub-categories/sub-categories.module';
 import { AtGuard } from './common/guards/accessToken.guard';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AtGuard } from './common/guards/accessToken.guard';
     UsersModule,
     AuthModule,
     SubCategoriesModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [

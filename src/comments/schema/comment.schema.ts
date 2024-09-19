@@ -11,8 +11,6 @@ export class Comment extends Document {
   likes: number;
   @Prop([{ type: Types.ObjectId, ref: 'User' }])
   likedBy: Types.ObjectId[];
-  @Prop([{ type: Types.ObjectId, ref: 'Comment' }])
-  replies: Types.ObjectId[];
   @Prop({ type: Types.ObjectId, ref: 'Post', required: true })
   postId: Types.ObjectId;
   @Prop({ type: Types.ObjectId, ref: 'Comment' })

@@ -87,10 +87,6 @@ export class PostsService {
       .limit(pageSize)
       .exec();
 
-    if (!posts || posts.length === 0) {
-      throw new NotFoundException('Không tìm thấy bài post nào');
-    }
-
     return { posts, totalPosts };
   }
 }

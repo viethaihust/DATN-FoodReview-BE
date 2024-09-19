@@ -18,14 +18,13 @@ export class CommentsService {
     return this.commentModel
       .find(query)
       .populate('user', '_id name email')
-      .populate('replies')
       .exec();
   }
 
   async findOne(id: string): Promise<Comment> {
     const comment = await this.commentModel
       .findById(id)
-      .populate('user replies')
+      .populate('user')
       .exec();
     if (!comment) {
       throw new NotFoundException('Không tìm thấy comment');
@@ -40,7 +39,6 @@ export class CommentsService {
       user,
       content,
       likes: 0,
-      replies: [],
       postId,
       parentCommentId,
     }) as Comment & Document<any, any, Comment>;
@@ -50,7 +48,6 @@ export class CommentsService {
       if (!parentComment) {
         throw new NotFoundException('Parent comment not found');
       }
-      parentComment.replies.push(newComment._id);
       await parentComment.save();
     }
 
@@ -88,17 +85,6 @@ export class CommentsService {
       throw new Error(`Failed to like/unlike comment: ${error.message}`);
     }
   }
-
-  // async reply(
-  //   id: string,
-  //   createCommentDto: CreateCommentDto,
-  // ): Promise<Comment> {
-  //   const comment = await this.findOne(id);
-  //   const reply = new this.commentModel(createCommentDto);
-  //   comment.replies.push(reply);
-  //   await reply.save();
-  //   return comment.save();
-  // }
 
   async delete(id: string): Promise<Comment> {
     return this.commentModel.findByIdAndDelete(id).exec();

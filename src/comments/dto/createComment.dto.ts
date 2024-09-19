@@ -9,13 +9,9 @@ export class CreateCommentDto {
   @IsNotEmpty()
   content: string;
 
-  @IsNumber()
-  @IsNotEmpty()
-  likes: number;
-
   @IsOptional()
-  @IsString({ each: true })
-  replies: string[];
+  @IsNumber()
+  likes: number;
 
   @IsNotEmpty()
   @IsString()

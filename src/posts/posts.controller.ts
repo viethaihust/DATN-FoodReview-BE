@@ -2,8 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  HttpException,
-  HttpStatus,
   Param,
   Post,
   Query,
@@ -19,42 +17,30 @@ export class PostsController {
 
   @Post()
   async create(@Body() createPostDto: CreatePostDto) {
-    try {
-      const newPost = await this.postsService.createPost(createPostDto);
-      return {
-        status: HttpStatus.OK,
-        newPost,
-      };
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const newPost = await this.postsService.createPost(createPostDto);
+    return {
+      message: 'Tạo post thành công',
+      data: newPost,
+    };
   }
 
   @Public()
   @Get()
   async findAll(@Query() queryParams: FindAllPostsQueryDto): Promise<any> {
-    try {
-      const result = await this.postsService.findAll(queryParams);
-      return {
-        status: HttpStatus.OK,
-        result,
-      };
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const result = await this.postsService.findAll(queryParams);
+    return {
+      message: 'Tìm các post thành công',
+      data: result,
+    };
   }
 
   @Public()
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<any> {
-    try {
-      const result = await this.postsService.findOne(id);
-      return {
-        status: HttpStatus.OK,
-        result,
-      };
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const result = await this.postsService.findOne(id);
+    return {
+      message: 'Tìm post thành công',
+      data: result,
+    };
   }
 }

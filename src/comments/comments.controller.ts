@@ -28,7 +28,6 @@ export class CommentsController {
     return this.commentsService.findOne(id);
   }
 
-  @Public()
   @Post()
   async create(@Body() createCommentDto: CreateCommentDto) {
     return this.commentsService.createComment(createCommentDto);

@@ -9,9 +9,15 @@ import {
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Public } from 'src/common/decorators/public.decorator';
 import { multerOptions } from 'src/utils/multer';
+import { UploadService } from './upload.service';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Controller('upload')
 export class UploadController {
+  constructor(
+    private readonly uploadService: UploadService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
   @Public()
   @Post('one-image')
   @UseInterceptors(FileInterceptor('image', multerOptions))
@@ -20,7 +26,8 @@ export class UploadController {
     if (!file) {
       throw new UnprocessableEntityException('Hãy upload một ảnh');
     }
-    return 'Upload one image';
+
+    return await this.cloudinaryService.uploadFile(file);
   }
 
   @Public()
@@ -32,6 +39,7 @@ export class UploadController {
     if (!files) {
       throw new UnprocessableEntityException('Hãy upload ít nhất một ảnh');
     }
-    return 'Upload many images';
+
+    return await this.cloudinaryService.uploadFiles(files);
   }
 }

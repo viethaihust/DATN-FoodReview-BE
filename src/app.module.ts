@@ -12,6 +12,7 @@ import { SubCategoriesModule } from './sub-categories/sub-categories.module';
 import { AtGuard } from './common/guards/accessToken.guard';
 import { UploadModule } from './upload/upload.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { LikePostsModule } from './like-posts/like-posts.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     SubCategoriesModule,
     UploadModule,
     CloudinaryModule,
+    LikePostsModule,
   ],
   controllers: [AppController],
   providers: [

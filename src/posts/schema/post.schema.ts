@@ -10,7 +10,7 @@ export class Post extends Document {
   @Prop({ required: true })
   content: string;
   @Prop({ required: true })
-  image: string;
+  images: string[];
   @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
   category: Types.ObjectId;
   @Prop({ type: Types.ObjectId, ref: 'Category', required: true })

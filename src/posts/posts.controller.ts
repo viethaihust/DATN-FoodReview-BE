@@ -15,6 +15,7 @@ import { Public } from 'src/common/decorators/public.decorator';
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
+  @Public()
   @Post()
   async create(@Body() createPostDto: CreatePostDto) {
     const newPost = await this.postsService.createPost(createPostDto);
@@ -24,6 +25,7 @@ export class PostsController {
     };
   }
 
+  @Public()
   @Get()
   async findAll(@Query() queryParams: FindAllPostsQueryDto): Promise<any> {
     const result = await this.postsService.findAll(queryParams);

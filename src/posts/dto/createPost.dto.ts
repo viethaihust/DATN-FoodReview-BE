@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsMongoId } from 'class-validator';
+import { IsNotEmpty, IsString, IsMongoId, IsArray } from 'class-validator';
 
 export class CreatePostDto {
   @IsString()
@@ -13,9 +13,9 @@ export class CreatePostDto {
   @IsNotEmpty()
   content: string;
 
-  @IsString()
+  @IsArray()
   @IsNotEmpty()
-  image: string;
+  images: Array<string>;
 
   @IsMongoId()
   @IsNotEmpty()

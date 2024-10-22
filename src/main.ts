@@ -4,8 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
-  app.useGlobalPipes(new ValidationPipe());
-  //prefix api sẽ được thêm vào trước mỗi route
+  app.useGlobalPipes(new ValidationPipe({ forbidNonWhitelisted: true }));
   app.setGlobalPrefix('api');
   await app.listen(8000);
 }

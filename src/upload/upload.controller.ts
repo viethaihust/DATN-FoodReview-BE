@@ -22,7 +22,6 @@ export class UploadController {
   @Post('one-image')
   @UseInterceptors(FileInterceptor('image', multerOptions))
   async uploadOneImage(@UploadedFile() file: Express.Multer.File) {
-    console.log(file);
     if (!file) {
       throw new UnprocessableEntityException('Hãy upload một ảnh');
     }
@@ -35,7 +34,6 @@ export class UploadController {
   //tối đa 5 ảnh
   @UseInterceptors(FilesInterceptor('images', 5, multerOptions))
   async uploadManyImages(@UploadedFiles() files: Array<Express.Multer.File>) {
-    console.log(files);
     if (!files) {
       throw new UnprocessableEntityException('Hãy upload ít nhất một ảnh');
     }

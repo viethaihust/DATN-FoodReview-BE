@@ -13,6 +13,7 @@ import { AtGuard } from './common/guards/accessToken.guard';
 import { UploadModule } from './upload/upload.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { LikePostsModule } from './like-posts/like-posts.module';
+import { ReviewPostsModule } from './review-posts/review-posts.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { LikePostsModule } from './like-posts/like-posts.module';
     UploadModule,
     CloudinaryModule,
     LikePostsModule,
+    ReviewPostsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -7,7 +7,6 @@ import { LikePostDto } from './dto/likePost.dto';
 export class LikePostsController {
   constructor(private readonly likePostsService: LikePostsService) {}
 
-  @Public()
   @Post()
   async create(@Body() likePostDto: LikePostDto) {
     return this.likePostsService.createLikePost(likePostDto);
@@ -23,7 +22,6 @@ export class LikePostsController {
     return this.likePostsService.isLiked(likePostDto);
   }
 
-  @Public()
   @Post('unlike')
   async unlikePost(@Body() likePostDto: LikePostDto) {
     return this.likePostsService.unlikePost(likePostDto);

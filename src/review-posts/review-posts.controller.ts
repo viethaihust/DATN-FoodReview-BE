@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { Public } from 'src/common/decorators/public.decorator';
 import { ReviewPostsService } from './review-posts.service';
 import { CreateReviewPostDto } from './dto/createReviewPost.dto';
@@ -9,7 +9,6 @@ import { FindAllReviewPostDto } from './dto/findAllReviewPost.dto';
 export class ReviewPostsController {
   constructor(private readonly reviewPostsService: ReviewPostsService) {}
 
-  @Public()
   @Post()
   async create(@Body() createReviewPostDto: CreateReviewPostDto) {
     const newPost =
@@ -29,6 +28,16 @@ export class ReviewPostsController {
       await this.reviewPostsService.findAllReviewPost(findAllReviewPostDto);
     return {
       message: 'Tìm các review post thành công',
+      data: result,
+    };
+  }
+
+  @Public()
+  @Get(':id')
+  async findOne(@Param('id') id: string): Promise<any> {
+    const result = await this.reviewPostsService.findOneReviewPost(id);
+    return {
+      message: 'Tìm post thành công',
       data: result,
     };
   }

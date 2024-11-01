@@ -14,6 +14,7 @@ import { UploadModule } from './upload/upload.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { LikePostsModule } from './like-posts/like-posts.module';
 import { ReviewPostsModule } from './review-posts/review-posts.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { ReviewPostsModule } from './review-posts/review-posts.module';
     CloudinaryModule,
     LikePostsModule,
     ReviewPostsModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [

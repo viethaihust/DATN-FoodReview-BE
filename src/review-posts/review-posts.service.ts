@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { ReviewPost } from './schema/reviewPost.schema';
@@ -42,5 +42,17 @@ export class ReviewPostsService {
       .exec();
 
     return { posts, totalPosts };
+  }
+
+  async findOneReviewPost(id: string): Promise<ReviewPost> {
+    const post = await this.reviewPostModel
+      .findById(id)
+      .populate('userId', 'name')
+      .populate('categoryId')
+      .exec();
+    if (!post) {
+      throw new NotFoundException('Không tìm thấy bài post');
+    }
+    return post;
   }
 }

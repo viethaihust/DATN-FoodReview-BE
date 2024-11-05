@@ -55,4 +55,12 @@ export class ReviewPostsService {
     }
     return post;
   }
+
+  async getUserPosts(userId: string): Promise<ReviewPost[]> {
+    const objectId = new Types.ObjectId(userId);
+    return this.reviewPostModel
+      .find({ userId: objectId })
+      .populate('postId')
+      .exec();
+  }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query, Param } from '@nestjs/common';
+import { Controller, Get, Post, Query } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { Public } from 'src/common/decorators/public.decorator';
 

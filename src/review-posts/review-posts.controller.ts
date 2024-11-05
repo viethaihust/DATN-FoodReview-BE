@@ -41,4 +41,9 @@ export class ReviewPostsController {
       data: result,
     };
   }
+
+  @Get()
+  async getUserBookmarks(@Query('userId') userId: string) {
+    return this.reviewPostsService.getUserPosts(userId);
+  }
 }

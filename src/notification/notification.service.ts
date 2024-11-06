@@ -16,6 +16,17 @@ export class NotificationService {
     postId: string,
     message: string,
   ) {
+    const existingNotification = await this.notificationModel.findOne({
+      receiver,
+      sender,
+      postId,
+      message,
+    });
+
+    if (existingNotification) {
+      return existingNotification;
+    }
+
     const notification = new this.notificationModel({
       receiver,
       sender,

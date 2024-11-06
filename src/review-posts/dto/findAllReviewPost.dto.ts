@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, Min } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class FindAllReviewPostDto {
@@ -13,4 +13,8 @@ export class FindAllReviewPostDto {
   @IsNumber()
   @Min(1)
   pageSize?: number;
+
+  @IsOptional()
+  @IsString()
+  userId?: string;
 }

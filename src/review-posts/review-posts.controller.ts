@@ -2,7 +2,6 @@ import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { Public } from 'src/common/decorators/public.decorator';
 import { ReviewPostsService } from './review-posts.service';
 import { CreateReviewPostDto } from './dto/createReviewPost.dto';
-import { FindAllPostsQueryDto } from 'src/posts/dto/findAllPost.dto';
 import { FindAllReviewPostDto } from './dto/findAllReviewPost.dto';
 
 @Controller('review-posts')
@@ -40,10 +39,5 @@ export class ReviewPostsController {
       message: 'Tìm post thành công',
       data: result,
     };
-  }
-
-  @Get()
-  async getUserBookmarks(@Query('userId') userId: string) {
-    return this.reviewPostsService.getUserPosts(userId);
   }
 }

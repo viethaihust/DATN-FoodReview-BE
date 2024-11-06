@@ -39,7 +39,13 @@ export class BookmarkService {
     const objectId = new Types.ObjectId(userId);
     return this.bookmarkModel
       .find({ userId: objectId })
-      .populate('postId')
+      .populate({
+        path: 'postId',
+        populate: {
+          path: 'userId',
+          select: 'name',
+        },
+      })
       .exec();
   }
 

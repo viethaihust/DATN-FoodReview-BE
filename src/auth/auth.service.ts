@@ -13,11 +13,14 @@ import { Model } from 'mongoose';
 import { omit } from 'lodash';
 import { JwtPayloadWithRt, Token } from './types/jwtPayload.type';
 import { RefreshToken } from './schema/refreshToken.schema';
+import { CreateUserDto } from 'src/users/dto/createUser.dto';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
+    private readonly userService: UsersService,
     @InjectModel(User.name) private readonly userModel: Model<User>,
     @InjectModel(RefreshToken.name)
     private readonly refreshTokenModel: Model<RefreshToken>,
@@ -118,11 +121,6 @@ export class AuthService {
       throw new ConflictException('Email này đã được sử dụng');
     }
 
-    // viết 1 đoạn code test lỗi 500 khi không có try catch
-    // const test = 1;
-    // if (test === 1) {
-    //   throw new Error('Lỗi 500');
-    // }
     const hashedPassword = await this.hashPassword(dto.password);
     const newUser = await new this.userModel({
       ...dto,
@@ -170,9 +168,6 @@ export class AuthService {
         refreshToken,
         expiresIn: decodeAccessToken.exp,
       },
-
-      // sai cách viết xem lại thời gian tạo token xong thì thời gian hết hạn là bao lâu
-      // expiresIn: new Date().setTime(new Date().getTime() + EXPIRE_TIME),
     };
   }
 
@@ -233,5 +228,11 @@ export class AuthService {
       accessToken,
       refreshToken: refreshTokenNew,
     };
+  }
+
+  async validateGoogleUser(googleUser: CreateUserDto) {
+    const user = await this.userService.findByEmail(googleUser.email);
+    if (user) return user;
+    return await this.userService.create(googleUser);
   }
 }

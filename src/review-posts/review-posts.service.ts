@@ -28,9 +28,12 @@ export class ReviewPostsService {
   async findAllReviewPost(
     findAllReviewPostDto: FindAllReviewPostDto,
   ): Promise<{ posts: ReviewPost[]; totalPosts: number }> {
-    const { page = 1, pageSize = 5 } = findAllReviewPostDto;
+    const { page = 1, pageSize = 5, userId } = findAllReviewPostDto;
 
-    let query: any = {};
+    const query: any = {};
+    if (userId) {
+      query.userId = new Types.ObjectId(userId);
+    }
 
     const totalPosts = await this.reviewPostModel.countDocuments(query).exec();
     const posts = await this.reviewPostModel
@@ -54,13 +57,5 @@ export class ReviewPostsService {
       throw new NotFoundException('Không tìm thấy bài post');
     }
     return post;
-  }
-
-  async getUserPosts(userId: string): Promise<ReviewPost[]> {
-    const objectId = new Types.ObjectId(userId);
-    return this.reviewPostModel
-      .find({ userId: objectId })
-      .populate('postId')
-      .exec();
   }
 }

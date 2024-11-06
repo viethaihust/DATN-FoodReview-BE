@@ -7,6 +7,7 @@ import { User, UserSchema } from 'src/users/schema/user.schema';
 import AtStrategy from './strategies/accessToken.strategy';
 import { RefreshToken, RefreshTokenSchema } from './schema/refreshToken.schema';
 import { RtStrategy } from './strategies/refreshToken.strategy';
+import { UsersService } from 'src/users/users.service';
 
 @Module({
   imports: [
@@ -23,6 +24,6 @@ import { RtStrategy } from './strategies/refreshToken.strategy';
     JwtModule.register({}),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtService, AtStrategy, RtStrategy],
+  providers: [AuthService, JwtService, UsersService, AtStrategy, RtStrategy],
 })
 export class AuthModule {}

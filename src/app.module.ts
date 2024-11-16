@@ -15,6 +15,9 @@ import { LikePostsModule } from './like-posts/like-posts.module';
 import { ReviewPostsModule } from './review-posts/review-posts.module';
 import { NotificationModule } from './notification/notification.module';
 import { BookmarkModule } from './bookmark/bookmark.module';
+import { RolesGuard } from './auth/guards/roles.guard';
+import { JwtGuard } from './auth/guards/jwt.guard';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -37,6 +40,17 @@ import { BookmarkModule } from './bookmark/bookmark.module';
     BookmarkModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    JwtService,
+    {
+      provide: 'APP_GUARD',
+      useClass: JwtGuard,
+    },
+    {
+      provide: 'APP_GUARD',
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}

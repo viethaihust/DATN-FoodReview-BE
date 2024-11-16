@@ -7,7 +7,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-
 import { multerOptions } from 'src/utils/multer';
 import { UploadService } from './upload.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
@@ -19,7 +18,7 @@ export class UploadController {
     private readonly uploadService: UploadService,
     private readonly cloudinaryService: CloudinaryService,
   ) {}
-  @Public()
+
   @Post('one-image')
   @UseInterceptors(FileInterceptor('image', multerOptions))
   async uploadOneImage(@UploadedFile() file: Express.Multer.File) {
@@ -30,7 +29,6 @@ export class UploadController {
     return await this.cloudinaryService.uploadFile(file);
   }
 
-  @Public()
   @Post('many-images')
   //tối đa 5 ảnh
   @UseInterceptors(FilesInterceptor('images', 5, multerOptions))

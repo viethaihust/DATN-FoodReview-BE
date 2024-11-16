@@ -5,6 +5,9 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from 'src/users/schema/user.schema';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './guards/roles.guard';
+import { JwtGuard } from './guards/jwt.guard';
 
 @Module({
   imports: [
@@ -16,6 +19,14 @@ import { User, UserSchema } from 'src/users/schema/user.schema';
     ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtService, UsersService],
+  providers: [
+    AuthService,
+    JwtService,
+    UsersService,
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AuthModule {}

@@ -1,10 +1,20 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/createUser.dto';
 import { AuthService } from './auth.service';
 import { UsersService } from 'src/users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshJwtGuard } from './guards/refresh.guard';
 import { Public } from './decorators/public.decorator';
+import { Roles } from './decorators/roles.decorator';
+import { JwtGuard } from './guards/jwt.guard';
+import { RolesGuard } from './guards/roles.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -30,5 +40,13 @@ export class AuthController {
   @Post('refresh')
   async refreshToken(@Request() req) {
     return await this.authService.refreshToken(req.user);
+  }
+
+  @Roles('admin')
+  @Get('protected')
+  getAll(@Request() req) {
+    return {
+      messege: `Now you can access this protected API. this is your user email: ${req.user.email}`,
+    };
   }
 }

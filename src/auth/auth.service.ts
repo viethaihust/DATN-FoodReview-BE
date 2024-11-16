@@ -30,6 +30,7 @@ export class AuthService {
 
     const payload = {
       email: user.email,
+      role: user.role,
       sub: {
         name: user.name,
       },
@@ -58,6 +59,7 @@ export class AuthService {
   async refreshToken(user: any) {
     const payload = {
       email: user.email,
+      role: user.role,
       sub: user.sub,
     };
 

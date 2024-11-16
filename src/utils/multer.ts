@@ -1,5 +1,3 @@
-//set up multer for file uploads
-
 import { UnprocessableEntityException } from '@nestjs/common';
 import * as multer from 'multer';
 

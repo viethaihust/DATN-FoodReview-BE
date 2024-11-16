@@ -12,7 +12,6 @@ export class LikePostsController {
     return this.likePostsService.toggleLike(likePostDto);
   }
 
-  @Public()
   @Get('status')
   async checkLikeStatus(
     @Query('userId') userId: string,

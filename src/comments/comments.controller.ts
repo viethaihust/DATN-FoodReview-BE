@@ -41,7 +41,6 @@ export class CommentsController {
     return this.commentsService.createComment(createCommentDto);
   }
 
-  @Public()
   @Patch(':id/like')
   async likeComment(
     @Param('id') id: string,
@@ -50,7 +49,6 @@ export class CommentsController {
     return this.commentsService.like(id, userId);
   }
 
-  @Public()
   @Delete(':id')
   delete(@Param('id') id: string) {
     return this.commentsService.delete(id);

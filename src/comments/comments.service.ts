@@ -11,20 +11,35 @@ export class CommentsService {
   ) {}
 
   async findAll(postId?: string): Promise<Comment[]> {
-    const query: any = {};
+    const query: any = { parentCommentId: { $exists: false } };
     if (postId) {
-      query.postId = postId;
+      query.postId = new Types.ObjectId(postId);
     }
-    return this.commentModel
-      .find(query)
-      .populate('user', '_id name email')
+
+    return this.commentModel.find(query).populate('userId', '_id name').exec();
+  }
+
+  async findReplies(parentCommentId?: string): Promise<Comment[]> {
+    if (!Types.ObjectId.isValid(parentCommentId)) {
+      throw new NotFoundException('Invalid parentCommentId');
+    }
+
+    const replies = await this.commentModel
+      .find({ parentCommentId: new Types.ObjectId(parentCommentId) })
+      .populate('userId', '_id name')
       .exec();
+
+    if (!replies.length) {
+      throw new NotFoundException('No replies found for this comment');
+    }
+
+    return replies;
   }
 
   async findOne(id: string): Promise<Comment> {
     const comment = await this.commentModel
       .findById(id)
-      .populate('user')
+      .populate('userId')
       .exec();
     if (!comment) {
       throw new NotFoundException('Không tìm thấy comment');
@@ -33,26 +48,44 @@ export class CommentsService {
   }
 
   async createComment(createCommentDto: CreateCommentDto): Promise<Comment> {
-    const { user, content, postId, parentCommentId } = createCommentDto;
+    const { userId, content, postId, parentCommentId } = createCommentDto;
+
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new NotFoundException('Invalid userId');
+    }
+    if (!Types.ObjectId.isValid(postId)) {
+      throw new NotFoundException('Invalid postId');
+    }
 
     const newComment = new this.commentModel({
-      user,
+      userId: new Types.ObjectId(userId),
       content,
       likes: 0,
-      postId,
-      parentCommentId,
+      replies: 0,
+      postId: new Types.ObjectId(postId),
+      parentCommentId: parentCommentId
+        ? new Types.ObjectId(parentCommentId)
+        : undefined,
     }) as Comment & Document<any, any, Comment>;
 
     if (parentCommentId) {
-      const parentComment = await this.commentModel.findById(parentCommentId);
+      if (!Types.ObjectId.isValid(parentCommentId)) {
+        throw new NotFoundException('Invalid parentCommentId');
+      }
+
+      const parentComment = await this.commentModel.findByIdAndUpdate(
+        new Types.ObjectId(parentCommentId),
+        {
+          $inc: { replies: 1 },
+        },
+      );
       if (!parentComment) {
         throw new NotFoundException('Parent comment not found');
       }
-      await parentComment.save();
     }
 
     const savedComment = await newComment.save();
-    return savedComment.populate('user', 'name');
+    return savedComment.populate('userId', 'name');
   }
 
   async like(id: string, userId: string): Promise<Comment> {
@@ -86,7 +119,8 @@ export class CommentsService {
     }
   }
 
-  async delete(id: string): Promise<Comment> {
-    return this.commentModel.findByIdAndDelete(id).exec();
+  async delete(id: string): Promise<Comment | null> {
+    const objectId = new Types.ObjectId(id);
+    return this.commentModel.findByIdAndDelete(objectId).exec();
   }
 }

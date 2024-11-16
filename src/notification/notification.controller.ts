@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Query } from '@nestjs/common';
 import { NotificationService } from './notification.service';
-import { Public } from 'src/common/decorators/public.decorator';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('notification')
 export class NotificationController {

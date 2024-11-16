@@ -6,7 +6,7 @@ import {
   Param,
 } from '@nestjs/common';
 import { SubCategoriesService } from './sub-categories.service';
-import { Public } from 'src/common/decorators/public.decorator';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('sub-categories')
 export class SubCategoriesController {

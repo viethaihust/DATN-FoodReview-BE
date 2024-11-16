@@ -3,7 +3,7 @@ import { IsString, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 export class CreateCommentDto {
   @IsString()
   @IsNotEmpty()
-  user: string;
+  userId: string;
 
   @IsString()
   @IsNotEmpty()
@@ -11,7 +11,11 @@ export class CreateCommentDto {
 
   @IsOptional()
   @IsNumber()
-  likes: number;
+  likes?: number;
+
+  @IsOptional()
+  @IsNumber()
+  replies?: number;
 
   @IsNotEmpty()
   @IsString()

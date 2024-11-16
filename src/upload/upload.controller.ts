@@ -7,10 +7,11 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { Public } from 'src/common/decorators/public.decorator';
+
 import { multerOptions } from 'src/utils/multer';
 import { UploadService } from './upload.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('upload')
 export class UploadController {

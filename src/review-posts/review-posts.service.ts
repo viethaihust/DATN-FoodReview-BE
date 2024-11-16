@@ -4,12 +4,14 @@ import { Model, Types } from 'mongoose';
 import { ReviewPost } from './schema/reviewPost.schema';
 import { CreateReviewPostDto } from './dto/createReviewPost.dto';
 import { FindAllReviewPostDto } from './dto/findAllReviewPost.dto';
+import { User } from 'src/users/schema/user.schema';
 
 @Injectable()
 export class ReviewPostsService {
   constructor(
     @InjectModel(ReviewPost.name)
     private readonly reviewPostModel: Model<ReviewPost>,
+    @InjectModel(User.name) private readonly userModel: Model<User>,
   ) {}
 
   async createReviewPost(
@@ -57,5 +59,17 @@ export class ReviewPostsService {
       throw new NotFoundException('Không tìm thấy bài post');
     }
     return post;
+  }
+
+  async search(query: string) {
+    const userResults = await this.userModel
+      .find({ $text: { $search: query } })
+      .exec();
+
+    const postResults = await this.reviewPostModel
+      .find({ $text: { $search: query } })
+      .exec();
+
+    return { users: userResults, posts: postResults };
   }
 }

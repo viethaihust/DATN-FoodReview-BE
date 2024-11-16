@@ -1,60 +1,34 @@
 import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { CreateUserDto } from 'src/users/dto/createUser.dto';
 import { AuthService } from './auth.service';
+import { UsersService } from 'src/users/users.service';
 import { LoginDto } from './dto/login.dto';
-
-import { RegisterDto } from './dto/register.dto';
-import { Public } from 'src/common/decorators/public.decorator';
-import { RtGuard } from 'src/common/guards/refreshToken.guard';
+import { RefreshJwtGuard } from './guards/refresh.guard';
+import { Public } from './decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Public()
   @Post('register')
-  async register(@Body() registerDto: RegisterDto) {
-    const newUser = await this.authService.register(registerDto);
-    return {
-      statusCode: 200,
-      message: 'Đăng ký thành công',
-      data: newUser,
-    };
+  async register(@Body() createUserDto: CreateUserDto) {
+    return await this.usersService.create(createUserDto);
   }
 
   @Public()
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
-    const user = await this.authService.login(loginDto);
-    return {
-      statusCode: 200,
-      message: 'Đăng nhập thành công',
-      data: user,
-    };
+    return await this.authService.login(loginDto);
   }
 
   @Public()
-  @UseGuards(RtGuard)
-  @Post('logout')
-  async logout(@Request() req) {
-    const result = await this.authService.logout(
-      req.user.refreshToken as string,
-    );
-    return {
-      statusCode: 200,
-      message: 'Đăng xuất thành công',
-      data: result,
-    };
-  }
-
-  @Public()
-  @UseGuards(RtGuard)
+  @UseGuards(RefreshJwtGuard)
   @Post('refresh')
   async refreshToken(@Request() req) {
-    const result = await this.authService.refreshToken(req.user);
-    return {
-      statusCode: 200,
-      message: 'Làm mới token thành công',
-      data: result,
-    };
+    return await this.authService.refreshToken(req.user);
   }
 }

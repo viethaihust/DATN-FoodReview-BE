@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
-import { Public } from 'src/common/decorators/public.decorator';
+import { Public } from 'src/auth/decorators/public.decorator';
 import { ReviewPostsService } from './review-posts.service';
 import { CreateReviewPostDto } from './dto/createReviewPost.dto';
 import { FindAllReviewPostDto } from './dto/findAllReviewPost.dto';
@@ -29,6 +29,12 @@ export class ReviewPostsController {
       message: 'Tìm các review post thành công',
       data: result,
     };
+  }
+
+  @Public()
+  @Get('search')
+  async search(@Query('query') query: string) {
+    return this.reviewPostsService.search(query);
   }
 
   @Public()

@@ -6,7 +6,7 @@ import {
   Param,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
-import { Public } from 'src/common/decorators/public.decorator';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('categories')
 export class CategoriesController {

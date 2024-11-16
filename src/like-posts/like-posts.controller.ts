@@ -8,8 +8,8 @@ export class LikePostsController {
   constructor(private readonly likePostsService: LikePostsService) {}
 
   @Post()
-  async create(@Body() likePostDto: LikePostDto) {
-    return this.likePostsService.createLikePost(likePostDto);
+  async toggleLike(@Body() likePostDto: LikePostDto) {
+    return this.likePostsService.toggleLike(likePostDto);
   }
 
   @Public()
@@ -20,10 +20,5 @@ export class LikePostsController {
   ) {
     const likePostDto: LikePostDto = { userId, postId };
     return this.likePostsService.isLiked(likePostDto);
-  }
-
-  @Post('unlike')
-  async unlikePost(@Body() likePostDto: LikePostDto) {
-    return this.likePostsService.unlikePost(likePostDto);
   }
 }

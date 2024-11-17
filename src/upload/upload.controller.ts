@@ -19,6 +19,7 @@ export class UploadController {
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
+  @Public()
   @Post('one-image')
   @UseInterceptors(FileInterceptor('image', multerOptions))
   async uploadOneImage(@UploadedFile() file: Express.Multer.File) {
@@ -29,6 +30,7 @@ export class UploadController {
     return await this.cloudinaryService.uploadFile(file);
   }
 
+  @Public()
   @Post('many-images')
   //tối đa 5 ảnh
   @UseInterceptors(FilesInterceptor('images', 5, multerOptions))

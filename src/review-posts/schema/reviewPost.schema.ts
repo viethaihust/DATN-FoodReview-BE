@@ -13,8 +13,8 @@ export class ReviewPost extends Document {
   images: string[];
   @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
   categoryId: Types.ObjectId;
-  @Prop({ required: true })
-  address: string;
+  @Prop({ type: Types.ObjectId, ref: 'Location', required: true })
+  locationId: Types.ObjectId;
   @Prop({ type: Number, default: 0, required: true })
   likesCount: number;
   @Prop({

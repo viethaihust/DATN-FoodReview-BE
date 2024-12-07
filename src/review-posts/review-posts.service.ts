@@ -17,12 +17,13 @@ export class ReviewPostsService {
   async createReviewPost(
     createReviewPostDto: CreateReviewPostDto,
   ): Promise<ReviewPost> {
-    const { userId, categoryId, ...rest } = createReviewPostDto;
+    const { userId, categoryId, locationId, ...rest } = createReviewPostDto;
 
     const newPost = new this.reviewPostModel({
       ...rest,
       userId: new Types.ObjectId(userId),
       categoryId: new Types.ObjectId(categoryId),
+      locationId: new Types.ObjectId(locationId),
     });
     return await newPost.save();
   }
@@ -41,6 +42,7 @@ export class ReviewPostsService {
     const posts = await this.reviewPostModel
       .find(query)
       .populate('categoryId')
+      .populate('locationId')
       .populate('userId', 'name')
       .skip((page - 1) * pageSize)
       .limit(pageSize)
@@ -54,6 +56,7 @@ export class ReviewPostsService {
       .findById(id)
       .populate('userId', 'name')
       .populate('categoryId')
+      .populate('locationId')
       .exec();
     if (!post) {
       throw new NotFoundException('Không tìm thấy bài post');

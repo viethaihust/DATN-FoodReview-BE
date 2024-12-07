@@ -18,6 +18,7 @@ import { BookmarkModule } from './bookmark/bookmark.module';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { JwtGuard } from './auth/guards/jwt.guard';
 import { JwtService } from '@nestjs/jwt';
+import { LocationModule } from './location/location.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { JwtService } from '@nestjs/jwt';
     ReviewPostsModule,
     NotificationModule,
     BookmarkModule,
+    LocationModule,
   ],
   controllers: [AppController],
   providers: [

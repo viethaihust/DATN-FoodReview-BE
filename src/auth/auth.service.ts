@@ -4,6 +4,7 @@ import { compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { User } from 'src/users/schema/user.schema';
+import { GoogleLoginDto } from './dto/googleLogin.dto';
 
 const EXPIRE_TIME = 60 * 60 * 24 * 1000;
 
@@ -27,6 +28,46 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     const user = await this.validateUser(dto);
+
+    const payload = {
+      email: user.email,
+      role: user.role,
+      sub: {
+        name: user.name,
+      },
+    };
+
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '24h',
+      secret: process.env.JWT_SECRET_KEY,
+    });
+
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '30d',
+      secret: process.env.JWT_REFRESH_TOKEN_KEY,
+    });
+
+    return {
+      user,
+      backendTokens: {
+        accessToken,
+        refreshToken,
+      },
+      expiresIn: new Date().setTime(new Date().getTime() + EXPIRE_TIME),
+    };
+  }
+
+  async googleLogin(dto: GoogleLoginDto) {
+    let user = await this.usersService.findByEmail(dto.email);
+
+    if (!user) {
+      const newUser = {
+        name: dto.name,
+        email: dto.email,
+        password: '',
+      };
+      user = await this.usersService.create(newUser);
+    }
 
     const payload = {
       email: user.email,

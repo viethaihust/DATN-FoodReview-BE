@@ -13,8 +13,7 @@ import { LoginDto } from './dto/login.dto';
 import { RefreshJwtGuard } from './guards/refresh.guard';
 import { Public } from './decorators/public.decorator';
 import { Roles } from './decorators/roles.decorator';
-import { JwtGuard } from './guards/jwt.guard';
-import { RolesGuard } from './guards/roles.guard';
+import { GoogleLoginDto } from './dto/googleLogin.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -33,6 +32,12 @@ export class AuthController {
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
     return await this.authService.login(loginDto);
+  }
+  
+  @Public()
+  @Post('google-login')
+  async googleLogin(@Body() dto: GoogleLoginDto) {
+    return await this.authService.googleLogin(dto);
   }
 
   @Public()

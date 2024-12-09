@@ -46,12 +46,4 @@ export class AuthController {
   async refreshToken(@Request() req) {
     return await this.authService.refreshToken(req.user);
   }
-
-  @Roles('admin')
-  @Get('protected')
-  getAll(@Request() req) {
-    return {
-      messege: `Now you can access this protected API. this is your user email: ${req.user.email}`,
-    };
-  }
 }

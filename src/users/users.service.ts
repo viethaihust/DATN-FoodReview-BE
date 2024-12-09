@@ -31,8 +31,8 @@ export class UsersService {
       });
 
       const result = await newUser.save();
-      const { _id, email, name } = result.toObject();
-      return { _id, email, name } as Omit<User, 'password'>;
+      const { _id, email, name, image } = result.toObject();
+      return { _id, email, name, image } as Omit<User, 'password'>;
     } catch (error) {
       throw new InternalServerErrorException(
         'Tạo user thất bại',
@@ -42,10 +42,38 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return await this.userModel.findOne({ email }).exec();
+    return this.userModel.findOne({ email }).exec();
   }
 
   async findById(id: string): Promise<User | null> {
     return this.userModel.findById(id).exec();
+  }
+
+  async findAllUsers(
+    page: number,
+    limit: number,
+  ): Promise<{ users: User[]; total: number }> {
+    const skip = (page - 1) * limit;
+    const [users, total] = await Promise.all([
+      this.userModel.find().skip(skip).limit(limit).exec(),
+      this.userModel.countDocuments().exec(),
+    ]);
+    return { users, total };
+  }
+
+  async banUser(userId: string): Promise<User | null> {
+    return this.userModel.findByIdAndUpdate(
+      userId,
+      { banned: true },
+      { new: true },
+    );
+  }
+
+  async unbanUser(userId: string): Promise<User | null> {
+    return this.userModel.findByIdAndUpdate(
+      userId,
+      { banned: false },
+      { new: true },
+    );
   }
 }

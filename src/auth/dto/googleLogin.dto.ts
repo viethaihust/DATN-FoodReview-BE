@@ -7,4 +7,7 @@ export class GoogleLoginDto {
 
   @IsString()
   name: string;
+
+  @IsString()
+  image: string;
 }

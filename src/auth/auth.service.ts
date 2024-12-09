@@ -18,12 +18,33 @@ export class AuthService {
   async validateUser(dto: LoginDto): Promise<Omit<User, 'password'> | null> {
     const user = await this.usersService.findByEmail(dto.email);
 
+    if (user && user.banned) {
+      throw new UnauthorizedException('Tài khoản của bạn đã bị khóa');
+    }
+
     if (user && (await compare(dto.password, user.password))) {
       const { password, ...result } = user.toObject();
       return result;
     }
 
     throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
+  }
+
+  async validateGoogleUser(
+    dto: GoogleLoginDto,
+  ): Promise<Omit<User, 'password'> | null> {
+    const user = await this.usersService.findByEmail(dto.email);
+
+    if (user && user.banned) {
+      throw new UnauthorizedException('Tài khoản của bạn đã bị khóa');
+    }
+
+    if (user) {
+      const { password, ...result } = user.toObject();
+      return result;
+    }
+
+    return null;
   }
 
   async login(dto: LoginDto) {
@@ -58,13 +79,14 @@ export class AuthService {
   }
 
   async googleLogin(dto: GoogleLoginDto) {
-    let user = await this.usersService.findByEmail(dto.email);
+    let user = await this.validateGoogleUser(dto);
 
     if (!user) {
       const newUser = {
         name: dto.name,
         email: dto.email,
         password: '',
+        image: dto.image,
       };
       user = await this.usersService.create(newUser);
     }

@@ -9,8 +9,12 @@ export class User extends Document {
   password?: string;
   @Prop({ required: true })
   name: string;
+  @Prop({ required: false })
+  image?: string;
   @Prop({ required: true, enum: ['admin', 'user'], default: 'user' })
   role: string;
+  @Prop({ default: false })
+  banned: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

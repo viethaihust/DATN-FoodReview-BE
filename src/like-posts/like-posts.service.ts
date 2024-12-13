@@ -64,18 +64,20 @@ export class LikePostsService {
         $inc: { likesCount: 1 },
       });
 
-      await this.notificationService.createNotification(
-        postOwnerId,
-        userId,
-        postId,
-        `${likingUser.name} thích bài viết của bạn!`,
-      );
+      if (userId !== postOwnerId) {
+        await this.notificationService.createNotification(
+          postOwnerId,
+          userId,
+          postId,
+          `${likingUser.name} thích bài viết "${reviewPost.title}" của bạn!`,
+        );
 
-      this.notificationGateway.sendLikeNotification(
-        postOwnerId,
-        userId,
-        postId,
-      );
+        this.notificationGateway.sendLikeNotification(
+          postOwnerId,
+          userId,
+          postId,
+        );
+      }
 
       return savedLikePost.populate('userId', 'name');
     }

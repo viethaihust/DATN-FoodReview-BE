@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Get,
   Post,
   Request,
   UseGuards,
@@ -12,7 +11,6 @@ import { UsersService } from 'src/users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshJwtGuard } from './guards/refresh.guard';
 import { Public } from './decorators/public.decorator';
-import { Roles } from './decorators/roles.decorator';
 import { GoogleLoginDto } from './dto/googleLogin.dto';
 
 @Controller('auth')

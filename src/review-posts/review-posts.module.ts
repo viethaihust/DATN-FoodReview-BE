@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ReviewPost, ReviewPostSchema } from './schema/reviewPost.schema';
 import { ReviewPostsController } from './review-posts.controller';
 import { User, UserSchema } from 'src/users/schema/user.schema';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { User, UserSchema } from 'src/users/schema/user.schema';
       { name: User.name, schema: UserSchema },
     ]),
   ],
-  providers: [ReviewPostsService],
+  providers: [ReviewPostsService, JwtService],
   controllers: [ReviewPostsController],
 })
 export class ReviewPostsModule {}

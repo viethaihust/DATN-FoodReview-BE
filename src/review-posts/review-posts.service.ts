@@ -5,6 +5,7 @@ import { ReviewPost } from './schema/reviewPost.schema';
 import { CreateReviewPostDto } from './dto/createReviewPost.dto';
 import { FindAllReviewPostDto } from './dto/findAllReviewPost.dto';
 import { User } from 'src/users/schema/user.schema';
+import { UpdateReviewPostDto } from './dto/updateReviewPost.dto';
 
 @Injectable()
 export class ReviewPostsService {
@@ -71,8 +72,27 @@ export class ReviewPostsService {
 
     const postResults = await this.reviewPostModel
       .find({ $text: { $search: query } })
+      .populate('userId', 'name')
+      .populate('categoryId')
+      .populate('locationId')
       .exec();
 
     return { users: userResults, posts: postResults };
+  }
+
+  async updatePost(
+    postId: string,
+    updateData: UpdateReviewPostDto,
+  ): Promise<ReviewPost> {
+    const { userId } = updateData;
+    const objectIdUser = new Types.ObjectId(userId);
+
+    return this.reviewPostModel
+      .findByIdAndUpdate(
+        postId,
+        { ...updateData, userId: objectIdUser },
+        { new: true },
+      )
+      .exec();
   }
 }

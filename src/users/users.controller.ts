@@ -1,12 +1,21 @@
-import { Controller, Get, NotFoundException, Param, Patch, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  Query,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { GetAllUsersDto } from './dto/getAllUsers.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Public()
   @Get(':id')
   async getUserProfile(@Param('id') id: string) {
     return await this.usersService.findById(id);

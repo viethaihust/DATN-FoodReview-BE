@@ -1,12 +1,27 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { ReviewPostsService } from './review-posts.service';
 import { CreateReviewPostDto } from './dto/createReviewPost.dto';
 import { FindAllReviewPostDto } from './dto/findAllReviewPost.dto';
+import { JwtService } from '@nestjs/jwt';
+import { UpdateReviewPostDto } from './dto/updateReviewPost.dto';
 
 @Controller('review-posts')
 export class ReviewPostsController {
-  constructor(private readonly reviewPostsService: ReviewPostsService) {}
+  constructor(
+    private readonly reviewPostsService: ReviewPostsService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   @Post()
   async create(@Body() createReviewPostDto: CreateReviewPostDto) {
@@ -44,6 +59,42 @@ export class ReviewPostsController {
     return {
       message: 'Tìm post thành công',
       data: result,
+    };
+  }
+
+  @Patch(':postId')
+  async updatePost(
+    @Param('postId') postId: string,
+    @Body() updateReviewPostDto: UpdateReviewPostDto,
+    @Req() req: any,
+  ) {
+    const { userId } = updateReviewPostDto;
+    
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      throw new UnauthorizedException('Authorization header is missing');
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decodedToken = this.jwtService.decode(token) as { _id: string };
+
+    const post = await this.reviewPostsService.findOneReviewPost(postId);
+    if (!post) {
+      throw new UnauthorizedException('Post not found');
+    }
+
+    if (!decodedToken || decodedToken._id !== post.userId._id.toString()) {
+      throw new UnauthorizedException('User ID does not match token');
+    }
+
+    const updatedPost = await this.reviewPostsService.updatePost(
+      postId,
+      updateReviewPostDto,
+    );
+
+    return {
+      message: 'Post updated successfully',
+      data: updatedPost,
     };
   }
 }

@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { User } from 'src/users/schema/user.schema';
 import { GoogleLoginDto } from './dto/googleLogin.dto';
+import _ from 'lodash';
 
 const EXPIRE_TIME = 60 * 60 * 24 * 1000;
 
@@ -51,6 +52,7 @@ export class AuthService {
     const user = await this.validateUser(dto);
 
     const payload = {
+      _id: user._id,
       email: user.email,
       role: user.role,
       sub: {
@@ -92,6 +94,7 @@ export class AuthService {
     }
 
     const payload = {
+      _id: user._id,
       email: user.email,
       role: user.role,
       sub: {
@@ -121,6 +124,7 @@ export class AuthService {
 
   async refreshToken(user: any) {
     const payload = {
+      _id: user._id,
       email: user.email,
       role: user.role,
       sub: user.sub,

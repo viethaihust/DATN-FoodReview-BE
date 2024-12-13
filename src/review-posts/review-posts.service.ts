@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { ReviewPost } from './schema/reviewPost.schema';
@@ -94,5 +98,19 @@ export class ReviewPostsService {
         { new: true },
       )
       .exec();
+  }
+
+  async getRandomPosts(excludedPostId: string): Promise<ReviewPost[]> {
+    try {
+      const excludedObjectId = new Types.ObjectId(excludedPostId);
+      const randomPosts = await this.reviewPostModel.aggregate([
+        { $match: { _id: { $ne: excludedObjectId } } },
+        { $sample: { size: 3 } },
+      ]);
+
+      return randomPosts;
+    } catch (error) {
+      throw new Error('Error fetching random posts');
+    }
   }
 }

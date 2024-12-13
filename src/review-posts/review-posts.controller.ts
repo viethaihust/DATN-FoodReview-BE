@@ -53,6 +53,12 @@ export class ReviewPostsController {
   }
 
   @Public()
+  @Get('random')
+  async getRandomPosts(@Query('excludedPostId') excludedPostId: string) {
+    return this.reviewPostsService.getRandomPosts(excludedPostId);
+  }
+
+  @Public()
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<any> {
     const result = await this.reviewPostsService.findOneReviewPost(id);
@@ -68,8 +74,6 @@ export class ReviewPostsController {
     @Body() updateReviewPostDto: UpdateReviewPostDto,
     @Req() req: any,
   ) {
-    const { userId } = updateReviewPostDto;
-    
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       throw new UnauthorizedException('Authorization header is missing');

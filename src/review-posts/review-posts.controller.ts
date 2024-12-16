@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -82,23 +83,48 @@ export class ReviewPostsController {
     const token = authHeader.split(' ')[1];
     const decodedToken = this.jwtService.decode(token) as { _id: string };
 
-    const post = await this.reviewPostsService.findOneReviewPost(postId);
-    if (!post) {
-      throw new UnauthorizedException('Post not found');
-    }
-
-    if (!decodedToken || decodedToken._id !== post.userId._id.toString()) {
-      throw new UnauthorizedException('User ID does not match token');
+    if (!decodedToken) {
+      throw new UnauthorizedException('Invalid token');
     }
 
     const updatedPost = await this.reviewPostsService.updatePost(
       postId,
+      decodedToken._id,
       updateReviewPostDto,
     );
 
     return {
       message: 'Post updated successfully',
       data: updatedPost,
+    };
+  }
+
+  @Delete(':postId')
+  async deletePost(@Param('postId') postId: string, @Req() req: any) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      throw new UnauthorizedException('Authorization header is missing');
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decodedToken = this.jwtService.decode(token) as {
+      _id: string;
+      role: string;
+    };
+
+    if (!decodedToken) {
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    const deletedPost = await this.reviewPostsService.deletePost(
+      postId,
+      decodedToken._id,
+      decodedToken.role,
+    );
+
+    return {
+      message: 'Post deleted successfully',
+      data: deletedPost,
     };
   }
 }

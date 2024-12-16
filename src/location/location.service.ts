@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateLocationDto } from './dto/createLocation.dto';
 import { Model } from 'mongoose';
@@ -19,5 +19,13 @@ export class LocationService {
     return this.locationModel
       .find({ $text: { $search: query } }, { score: { $meta: 'textScore' } })
       .sort({ score: { $meta: 'textScore' } });
+  }
+
+  async findOne(id: string): Promise<Location> {
+    const location = await this.locationModel.findById(id).exec();
+    if (!location) {
+      throw new NotFoundException(`Location with id ${id} not found`);
+    }
+    return location;
   }
 }

@@ -1,7 +1,7 @@
 import {
-  BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -10,6 +10,10 @@ import { CreateReviewPostDto } from './dto/createReviewPost.dto';
 import { FindAllReviewPostDto } from './dto/findAllReviewPost.dto';
 import { User } from 'src/users/schema/user.schema';
 import { UpdateReviewPostDto } from './dto/updateReviewPost.dto';
+import { Bookmark } from 'src/bookmark/schema/bookmark.schema';
+import { LikePost } from 'src/like-posts/schema/likePost.schema';
+import { Comment } from 'src/comments/schema/comment.schema';
+import { Notification } from 'src/notification/schema/notification.schema';
 
 @Injectable()
 export class ReviewPostsService {
@@ -17,6 +21,11 @@ export class ReviewPostsService {
     @InjectModel(ReviewPost.name)
     private readonly reviewPostModel: Model<ReviewPost>,
     @InjectModel(User.name) private readonly userModel: Model<User>,
+    @InjectModel(Bookmark.name) private readonly bookmarkModel: Model<User>,
+    @InjectModel(LikePost.name) private readonly likePostModel: Model<User>,
+    @InjectModel(Comment.name) private readonly commentModel: Model<User>,
+    @InjectModel(Notification.name)
+    private readonly notificationModel: Model<User>,
   ) {}
 
   async createReviewPost(
@@ -86,15 +95,33 @@ export class ReviewPostsService {
 
   async updatePost(
     postId: string,
+    decodedUserId: string,
     updateData: UpdateReviewPostDto,
   ): Promise<ReviewPost> {
-    const { userId } = updateData;
+    const post = await this.reviewPostModel.findById(postId);
+
+    if (!post) {
+      throw new NotFoundException('Không tìm thấy bài post');
+    }
+
+    if (post.userId.toString() !== decodedUserId) {
+      throw new UnauthorizedException('Bạn không có quyền xóa bài post này');
+    }
+
+    const { userId, categoryId, locationId } = updateData;
     const objectIdUser = new Types.ObjectId(userId);
+    const objectIdCategory = new Types.ObjectId(categoryId);
+    const objectIdLocation = new Types.ObjectId(locationId);
 
     return this.reviewPostModel
       .findByIdAndUpdate(
         postId,
-        { ...updateData, userId: objectIdUser },
+        {
+          ...updateData,
+          userId: objectIdUser,
+          categoryId: objectIdCategory,
+          locationId: objectIdLocation,
+        },
         { new: true },
       )
       .exec();
@@ -112,5 +139,37 @@ export class ReviewPostsService {
     } catch (error) {
       throw new Error('Error fetching random posts');
     }
+  }
+
+  async deletePost(
+    postId: string,
+    decodedUserId: string,
+    decodedUserRole: string,
+  ): Promise<ReviewPost> {
+    const post = await this.reviewPostModel.findById(postId);
+
+    if (!post) {
+      throw new NotFoundException('Không tìm thấy bài post');
+    }
+
+    if (
+      decodedUserRole !== 'admin' &&
+      post.userId.toString() !== decodedUserId
+    ) {
+      throw new UnauthorizedException('Bạn không có quyền xóa bài post này');
+    }
+
+    const objectIdPost = new Types.ObjectId(postId);
+
+    await Promise.all([
+      this.bookmarkModel.deleteMany({ postId: objectIdPost }),
+      this.likePostModel.deleteMany({ postId: objectIdPost }),
+      this.commentModel.deleteMany({ postId: objectIdPost }),
+      this.notificationModel.deleteMany({ postId: objectIdPost }),
+    ]);
+
+    await this.reviewPostModel.findByIdAndDelete(objectIdPost).exec();
+
+    return post;
   }
 }

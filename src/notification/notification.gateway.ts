@@ -11,7 +11,9 @@ import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 
 @WebSocketGateway({ cors: { origin: '*' } })
-export class NotificationGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class NotificationGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
@@ -26,13 +28,18 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
   }
 
   @SubscribeMessage('join')
-  handleJoinRoom(@MessageBody() userId: string, @ConnectedSocket() client: Socket) {
+  handleJoinRoom(
+    @MessageBody() userId: string,
+    @ConnectedSocket() client: Socket,
+  ) {
     client.join(userId);
     this.logger.log(`User with ID ${userId} joined their room`);
   }
 
   sendLikeNotification(receiverId: string, senderId: string, postId: string) {
     this.server.to(receiverId).emit('likeNotification', { senderId, postId });
-    this.logger.log(`Notification sent to user ${receiverId} from ${senderId} for post ${postId}`);
+    this.logger.log(
+      `Notification sent to user ${receiverId} from ${senderId} for post ${postId}`,
+    );
   }
 }

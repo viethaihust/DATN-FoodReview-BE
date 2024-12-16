@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Notification } from './schema/notification.schema';
 
 @Injectable()
@@ -28,9 +28,9 @@ export class NotificationService {
     }
 
     const notification = new this.notificationModel({
-      receiver,
-      sender,
-      postId,
+      receiver: new Types.ObjectId(receiver),
+      sender: new Types.ObjectId(sender),
+      postId: new Types.ObjectId(postId),
       message,
       read: false,
     });
@@ -39,14 +39,14 @@ export class NotificationService {
 
   async markAllAsRead(userId: string) {
     return this.notificationModel.updateMany(
-      { receiver: userId, read: false },
+      { receiver: new Types.ObjectId(userId), read: false },
       { $set: { read: true } },
     );
   }
 
   async getNotificationsForUser(userId: string) {
     return this.notificationModel
-      .find({ receiver: userId })
+      .find({ receiver: new Types.ObjectId(userId) })
       .sort({ createdAt: -1 });
   }
 }

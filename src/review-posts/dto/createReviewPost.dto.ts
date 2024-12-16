@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsMongoId, IsArray } from 'class-validator';
+import { IsNotEmpty, IsString, IsMongoId, IsArray, IsOptional } from 'class-validator';
 
 export class CreateReviewPostDto {
   @IsMongoId()
@@ -25,7 +25,7 @@ export class CreateReviewPostDto {
   @IsNotEmpty()
   locationId: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   ratings: {
     overall: number;
     flavor: number;

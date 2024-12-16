@@ -19,12 +19,12 @@ export class ReviewPost extends Document {
   likesCount: number;
   @Prop({
     type: {
-      overall: { type: Number, required: true },
-      flavor: { type: Number, required: true },
-      space: { type: Number, required: true },
-      hygiene: { type: Number, required: true },
-      price: { type: Number, required: true },
-      serves: { type: Number, required: true },
+      overall: { type: Number, default: 0, required: true },
+      flavor: { type: Number, default: 0, required: true },
+      space: { type: Number, default: 0, required: true },
+      hygiene: { type: Number, default: 0, required: true },
+      price: { type: Number, default: 0, required: true },
+      serves: { type: Number, default: 0, required: true },
     },
     required: true,
   })

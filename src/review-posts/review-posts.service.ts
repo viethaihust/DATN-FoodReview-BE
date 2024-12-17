@@ -44,7 +44,12 @@ export class ReviewPostsService {
 
   async findAllReviewPost(
     findAllReviewPostDto: FindAllReviewPostDto,
-  ): Promise<{ posts: ReviewPost[]; totalPosts: number }> {
+  ): Promise<{
+    posts: ReviewPost[];
+    page: number;
+    pageSize: number;
+    totalPosts: number;
+  }> {
     const { page = 1, pageSize = 5, userId } = findAllReviewPostDto;
 
     const query: any = {};
@@ -62,7 +67,7 @@ export class ReviewPostsService {
       .limit(pageSize)
       .exec();
 
-    return { posts, totalPosts };
+    return { posts, page, pageSize, totalPosts };
   }
 
   async findOneReviewPost(id: string): Promise<ReviewPost> {

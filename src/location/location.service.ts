@@ -17,7 +17,9 @@ export class LocationService {
 
   async search(query: string) {
     const regex = new RegExp(query, 'i');
-    return this.locationModel.find({ name: { $regex: regex } });
+    return this.locationModel.find({
+      $or: [{ name: { $regex: regex } }, { address: { $regex: regex } }],
+    });
   }
 
   async findOne(id: string): Promise<Location> {

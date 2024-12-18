@@ -32,8 +32,8 @@ export class UploadController {
 
   @Public()
   @Post('many-images')
-  //tối đa 5 ảnh
-  @UseInterceptors(FilesInterceptor('images', 5, multerOptions))
+  //tối đa 10 ảnh
+  @UseInterceptors(FilesInterceptor('images', 10, multerOptions))
   async uploadManyImages(@UploadedFiles() files: Array<Express.Multer.File>) {
     if (!files) {
       throw new UnprocessableEntityException('Hãy upload ít nhất một ảnh');

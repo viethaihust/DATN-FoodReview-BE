@@ -47,6 +47,8 @@ export class NotificationService {
   async getNotificationsForUser(userId: string) {
     return this.notificationModel
       .find({ receiver: new Types.ObjectId(userId) })
+      .populate('sender', 'name image')
+      .populate('postId')
       .sort({ createdAt: -1 });
   }
 }

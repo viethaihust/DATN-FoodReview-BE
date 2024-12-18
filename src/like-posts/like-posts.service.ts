@@ -69,7 +69,7 @@ export class LikePostsService {
           postOwnerId,
           userId,
           postId,
-          `${likingUser.name} thích bài viết "${reviewPost.title}" của bạn!`,
+          `thích bài viết`,
         );
 
         this.notificationGateway.sendLikeNotification(

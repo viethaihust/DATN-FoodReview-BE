@@ -1,7 +1,9 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Post,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -12,6 +14,7 @@ import { LoginDto } from './dto/login.dto';
 import { RefreshJwtGuard } from './guards/refresh.guard';
 import { Public } from './decorators/public.decorator';
 import { GoogleLoginDto } from './dto/googleLogin.dto';
+import { ChangePasswordDto } from './dto/changePassword.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -31,7 +34,7 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto) {
     return await this.authService.login(loginDto);
   }
-  
+
   @Public()
   @Post('google-login')
   async googleLogin(@Body() dto: GoogleLoginDto) {
@@ -43,5 +46,27 @@ export class AuthController {
   @Post('refresh')
   async refreshToken(@Request() req) {
     return await this.authService.refreshToken(req.user);
+  }
+
+  @Public()
+  @Post('send-magic-link')
+  async sendMagicLink(@Query('email') email: string) {
+    await this.authService.sendMagicLink(email);
+    return { message: `Magic link sent to your email: ${email}` };
+  }
+
+  @Public()
+  @Post('change-password')
+  async changePassword(
+    @Body() changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    const { token, password } = changePasswordDto;
+
+    if (!token || !password) {
+      throw new BadRequestException('Token and password are required.');
+    }
+
+    const message = await this.authService.changePassword(changePasswordDto);
+    return { message };
   }
 }

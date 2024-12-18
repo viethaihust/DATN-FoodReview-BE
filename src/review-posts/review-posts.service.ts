@@ -42,9 +42,7 @@ export class ReviewPostsService {
     return await newPost.save();
   }
 
-  async findAllReviewPost(
-    findAllReviewPostDto: FindAllReviewPostDto,
-  ): Promise<{
+  async findAllReviewPost(findAllReviewPostDto: FindAllReviewPostDto): Promise<{
     posts: ReviewPost[];
     page: number;
     pageSize: number;
@@ -65,6 +63,7 @@ export class ReviewPostsService {
       .populate('userId', 'name')
       .skip((page - 1) * pageSize)
       .limit(pageSize)
+      .sort({ createdAt: -1 })
       .exec();
 
     return { posts, page, pageSize, totalPosts };
@@ -84,12 +83,16 @@ export class ReviewPostsService {
   }
 
   async search(query: string) {
+    const regex = new RegExp(query, 'i');
+
     const userResults = await this.userModel
-      .find({ $text: { $search: query } })
+      .find({ name: { $regex: regex } })
       .exec();
 
     const postResults = await this.reviewPostModel
-      .find({ $text: { $search: query } })
+      .find({
+        $or: [{ title: { $regex: regex } }, { content: { $regex: regex } }],
+      })
       .populate('userId', 'name')
       .populate('categoryId')
       .populate('locationId')

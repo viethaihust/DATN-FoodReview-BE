@@ -8,7 +8,6 @@ import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { SubCategoriesModule } from './sub-categories/sub-categories.module';
 import { UploadModule } from './upload/upload.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { LikePostsModule } from './like-posts/like-posts.module';
@@ -32,7 +31,6 @@ import { LocationModule } from './location/location.module';
     CommentsModule,
     UsersModule,
     AuthModule,
-    SubCategoriesModule,
     UploadModule,
     CloudinaryModule,
     LikePostsModule,

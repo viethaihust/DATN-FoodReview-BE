@@ -20,8 +20,4 @@ export class CreatePostDto {
   @IsMongoId()
   @IsNotEmpty()
   category: string;
-
-  @IsMongoId()
-  @IsNotEmpty()
-  subCategory: string;
 }

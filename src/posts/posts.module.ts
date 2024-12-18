@@ -7,17 +7,12 @@ import {
   Category,
   CategorySchema,
 } from 'src/categories/schema/category.schema';
-import {
-  SubCategory,
-  SubCategorySchema,
-} from 'src/sub-categories/schema/sub-category.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Post.name, schema: PostSchema },
       { name: Category.name, schema: CategorySchema },
-      { name: SubCategory.name, schema: SubCategorySchema },
     ]),
   ],
   providers: [PostsService],

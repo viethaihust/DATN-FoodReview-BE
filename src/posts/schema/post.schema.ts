@@ -13,8 +13,6 @@ export class Post extends Document {
   images: string[];
   @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
   category: Types.ObjectId;
-  @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
-  subCategory: Types.ObjectId;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);

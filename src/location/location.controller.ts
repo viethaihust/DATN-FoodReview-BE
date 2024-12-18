@@ -7,7 +7,6 @@ import { Public } from 'src/auth/decorators/public.decorator';
 export class LocationController {
   constructor(private readonly locationService: LocationService) {}
 
-  @Public()
   @Post()
   async createLocation(@Body() createLocationDto: CreateLocationDto) {
     const newLocation = await this.locationService.create(createLocationDto);

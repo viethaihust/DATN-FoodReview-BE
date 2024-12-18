@@ -16,9 +16,8 @@ export class LocationService {
   }
 
   async search(query: string) {
-    return this.locationModel
-      .find({ $text: { $search: query } }, { score: { $meta: 'textScore' } })
-      .sort({ score: { $meta: 'textScore' } });
+    const regex = new RegExp(query, 'i');
+    return this.locationModel.find({ name: { $regex: regex } });
   }
 
   async findOne(id: string): Promise<Location> {

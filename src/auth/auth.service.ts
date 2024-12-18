@@ -1,11 +1,17 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
-import { compare } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { User } from 'src/users/schema/user.schema';
 import { GoogleLoginDto } from './dto/googleLogin.dto';
-import _ from 'lodash';
+import * as nodemailer from 'nodemailer';
+import { ChangePasswordDto } from './dto/changePassword.dto';
 
 const EXPIRE_TIME = 30 * 60 * 60 * 24 * 1000;
 
@@ -141,5 +147,61 @@ export class AuthService {
       }),
       expiresIn: new Date().setTime(new Date().getTime() + EXPIRE_TIME),
     };
+  }
+
+  async sendMagicLink(email: string): Promise<void> {
+    console.log(email);
+    const user = await this.usersService.findByEmail(email);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const token = await this.jwtService.signAsync(
+      { email: user.email },
+      { secret: process.env.JWT_SECRET_KEY, expiresIn: '15m' },
+    );
+
+    const magicLink = `${process.env.FRONTEND_URL}/change-password?token=${token}`;
+
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: 'Yêu cầu đổi mật khẩu',
+      html: `<p>Click vào link bên dưới để đổi mật khẩu:</p>
+             <a href="${magicLink}">${magicLink}</a>`,
+    });
+  }
+
+  async changePassword(changePasswordDto: ChangePasswordDto): Promise<string> {
+    const { token, password } = changePasswordDto;
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET_KEY,
+      });
+
+      const user = await this.usersService.findByEmail(payload.email);
+
+      if (!user) {
+        throw new NotFoundException('User not found.');
+      }
+
+      const hashedPassword = await hash(password, 10);
+
+      user.password = hashedPassword;
+      await user.save();
+
+      return 'Password changed successfully.';
+    } catch (error) {
+      throw new BadRequestException('Invalid or expired token.');
+    }
   }
 }

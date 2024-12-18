@@ -7,10 +7,6 @@ export class FindAllPostsQueryDto {
   categorySlug?: string;
 
   @IsOptional()
-  @IsString()
-  subCategorySlug?: string;
-
-  @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(1)

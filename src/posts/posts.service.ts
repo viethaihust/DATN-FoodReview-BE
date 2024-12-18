@@ -5,15 +5,12 @@ import { CreatePostDto } from './dto/createPost.dto';
 import { FindAllPostsQueryDto } from './dto/findAllPost.dto';
 import { Post } from './schema/post.schema';
 import { Category } from 'src/categories/schema/category.schema';
-import { SubCategory } from 'src/sub-categories/schema/sub-category.schema';
 
 @Injectable()
 export class PostsService {
   constructor(
     @InjectModel(Post.name) private readonly postModel: Model<Post>,
     @InjectModel(Category.name) private readonly categoryModel: Model<Category>,
-    @InjectModel(SubCategory.name)
-    private readonly subCategoryModel: Model<SubCategory>,
   ) {}
 
   async createPost(createPostDto: CreatePostDto): Promise<Post> {
@@ -39,7 +36,6 @@ export class PostsService {
   ): Promise<{ posts: Post[]; totalPosts: number } | { randomPosts: Post[] }> {
     const {
       categorySlug,
-      subCategorySlug,
       page = 1,
       pageSize = 5,
       random,
@@ -54,16 +50,6 @@ export class PostsService {
         throw new NotFoundException('Không tìm thấy category');
       }
       query = { category: category._id };
-    }
-
-    if (subCategorySlug) {
-      const subCategory = await this.subCategoryModel
-        .findOne({ slug: subCategorySlug })
-        .exec();
-      if (!subCategory) {
-        throw new NotFoundException('Không tìm thấy sub-category');
-      }
-      query = { subCategory: subCategory._id };
     }
 
     if (random && random.toLowerCase() === 'true') {

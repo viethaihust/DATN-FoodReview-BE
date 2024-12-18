@@ -201,7 +201,7 @@ export class AuthService {
 
       return 'Password changed successfully.';
     } catch (error) {
-      throw new BadRequestException('Invalid or expired token.');
+      throw new BadRequestException('Token không hợp lệ hoặc bị thiếu.');
     }
   }
 }

@@ -60,7 +60,7 @@ export class ReviewPostsService {
       .find(query)
       .populate('categoryId')
       .populate('locationId')
-      .populate('userId', 'name')
+      .populate('userId', 'name image')
       .skip((page - 1) * pageSize)
       .limit(pageSize)
       .sort({ createdAt: -1 })
@@ -72,7 +72,7 @@ export class ReviewPostsService {
   async findOneReviewPost(id: string): Promise<ReviewPost> {
     const post = await this.reviewPostModel
       .findById(id)
-      .populate('userId', 'name')
+      .populate('userId', 'name image')
       .populate('categoryId')
       .populate('locationId')
       .exec();
@@ -93,7 +93,7 @@ export class ReviewPostsService {
       .find({
         $or: [{ title: { $regex: regex } }, { content: { $regex: regex } }],
       })
-      .populate('userId', 'name')
+      .populate('userId', 'name image')
       .populate('categoryId')
       .populate('locationId')
       .exec();
@@ -141,6 +141,26 @@ export class ReviewPostsService {
       const randomPosts = await this.reviewPostModel.aggregate([
         { $match: { _id: { $ne: excludedObjectId } } },
         { $sample: { size: 3 } },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'userId',
+            pipeline: [
+              {
+                $project: {
+                  _id: 1,
+                  name: 1,
+                  image: 1,
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: '$userId',
+        },
       ]);
 
       return randomPosts;

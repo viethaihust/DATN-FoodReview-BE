@@ -1,19 +1,26 @@
 import {
+  Body,
   Controller,
   Get,
   NotFoundException,
   Param,
   Patch,
   Query,
+  Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { GetAllUsersDto } from './dto/getAllUsers.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Public } from 'src/auth/decorators/public.decorator';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   @Public()
   @Get(':id')
@@ -56,5 +63,23 @@ export class UsersController {
       throw new NotFoundException('User not found');
     }
     return { message: 'User unbanned successfully' };
+  }
+
+  @Patch('profile/image')
+  async updateProfileImage(@Req() req: any, @Body('image') image: string) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      throw new UnauthorizedException('Authorization header is missing');
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decodedToken = this.jwtService.decode(token) as { _id: string };
+
+    if (!decodedToken || !decodedToken._id) {
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    const userId = decodedToken._id;
+    return this.usersService.updateProfileImage(userId, image);
   }
 }

@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -75,5 +76,14 @@ export class UsersService {
       { banned: false },
       { new: true },
     );
+  }
+
+  async updateProfileImage(userId: string, image: string): Promise<User> {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    user.image = image;
+    return user.save();
   }
 }

@@ -51,4 +51,10 @@ export class NotificationService {
       .populate('postId')
       .sort({ createdAt: -1 });
   }
+
+  async deleteNotification(notificationId: string) {
+    return this.notificationModel.deleteOne({
+      _id: new Types.ObjectId(notificationId),
+    });
+  }
 }

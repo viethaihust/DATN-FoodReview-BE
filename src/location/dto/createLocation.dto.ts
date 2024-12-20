@@ -1,4 +1,9 @@
-import { IsString, IsNumber, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  ValidateNested,
+  IsOptional,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 class LatLongDto {
@@ -15,6 +20,10 @@ export class CreateLocationDto {
 
   @IsString()
   address: string;
+
+  @IsOptional()
+  @IsString()
+  province: string;
 
   @ValidateNested()
   @Type(() => LatLongDto)

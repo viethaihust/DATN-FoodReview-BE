@@ -7,6 +7,8 @@ export class Location extends Document {
   name: string;
   @Prop({ required: true })
   address: string;
+  @Prop({ required: false })
+  province: string;
   @Prop({
     required: true,
     type: {

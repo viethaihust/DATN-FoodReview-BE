@@ -36,8 +36,8 @@ export class NotificationGateway
     this.logger.log(`User with ID ${userId} joined their room`);
   }
 
-  sendLikeNotification(receiverId: string, senderId: string, postId: string) {
-    this.server.to(receiverId).emit('likeNotification', { senderId, postId });
+  sendNotification(receiverId: string, senderId: string, postId: string) {
+    this.server.to(receiverId).emit('Notification', { senderId, postId });
     this.logger.log(
       `Notification sent to user ${receiverId} from ${senderId} for post ${postId}`,
     );

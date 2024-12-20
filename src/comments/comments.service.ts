@@ -3,11 +3,18 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Document, Model, Types } from 'mongoose';
 import { CreateCommentDto } from './dto/createComment.dto';
 import { Comment } from './schema/comment.schema';
+import { ReviewPost } from 'src/review-posts/schema/reviewPost.schema';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationGateway } from 'src/notification/notification.gateway';
 
 @Injectable()
 export class CommentsService {
   constructor(
     @InjectModel(Comment.name) private readonly commentModel: Model<Comment>,
+    @InjectModel(ReviewPost.name)
+    private readonly reviewPostModel: Model<ReviewPost>,
+    private readonly notificationService: NotificationService,
+    private readonly notificationGateway: NotificationGateway,
   ) {}
 
   async findAll(postId?: string): Promise<Comment[]> {
@@ -68,6 +75,14 @@ export class CommentsService {
         : undefined,
     }) as Comment & Document<any, any, Comment>;
 
+    const reviewPost = await this.reviewPostModel
+      .findById(newComment.postId)
+      .populate('userId');
+
+    if (!reviewPost) {
+      throw new Error('Post not found');
+    }
+
     if (parentCommentId) {
       if (!Types.ObjectId.isValid(parentCommentId)) {
         throw new NotFoundException('Invalid parentCommentId');
@@ -75,12 +90,40 @@ export class CommentsService {
 
       const parentComment = await this.commentModel.findByIdAndUpdate(
         new Types.ObjectId(parentCommentId),
-        {
-          $inc: { replies: 1 },
-        },
+        { $inc: { replies: 1 } },
       );
       if (!parentComment) {
         throw new NotFoundException('Parent comment not found');
+      }
+
+      const parentCommentOwnerId = parentComment.userId.toString();
+
+      if (userId !== parentCommentOwnerId) {
+        await this.notificationService.createNotification(
+          parentCommentOwnerId,
+          userId,
+          postId,
+          `trả lời bình luận của bạn trong bài viết "${reviewPost.title}"`,
+        );
+
+        this.notificationGateway.sendNotification(
+          parentCommentOwnerId,
+          userId,
+          postId,
+        );
+      }
+    } else {
+      const postOwnerId = reviewPost.userId._id.toString();
+
+      if (userId !== postOwnerId) {
+        await this.notificationService.createNotification(
+          postOwnerId,
+          userId,
+          postId,
+          `bình luận bài viết "${reviewPost.title}" của bạn`,
+        );
+
+        this.notificationGateway.sendNotification(postOwnerId, userId, postId);
       }
     }
 

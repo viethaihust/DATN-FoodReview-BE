@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { LikePost } from './schema/likePost.schema';
@@ -69,14 +69,10 @@ export class LikePostsService {
           postOwnerId,
           userId,
           postId,
-          `thích bài viết`,
+          `thích bài viết "${reviewPost.title}" của bạn`,
         );
 
-        this.notificationGateway.sendLikeNotification(
-          postOwnerId,
-          userId,
-          postId,
-        );
+        this.notificationGateway.sendNotification(postOwnerId, userId, postId);
       }
 
       return savedLikePost.populate('userId', 'name');

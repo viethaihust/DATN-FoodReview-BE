@@ -17,4 +17,12 @@ export class FindAllReviewPostDto {
   @IsOptional()
   @IsString()
   userId?: string;
+
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
+
+  @IsOptional()
+  @IsString()
+  province?: string;
 }

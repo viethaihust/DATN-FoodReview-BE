@@ -6,15 +6,14 @@ import { ReviewPostsController } from './review-posts.controller';
 import { User, UserSchema } from 'src/users/schema/user.schema';
 import { JwtService } from '@nestjs/jwt';
 import { Bookmark, BookmarkSchema } from 'src/bookmark/schema/bookmark.schema';
-import {
-  LikePost,
-  LikePostSchema,
-} from 'src/like-posts/schema/likePost.schema';
 import { Comment, CommentSchema } from 'src/comments/schema/comment.schema';
 import {
   Notification,
   NotificationSchema,
 } from 'src/notification/schema/notification.schema';
+import { Like, LikeSchema } from 'src/likes/schema/likes.schema';
+import { Follow, FollowSchema } from 'src/follows/schema/follow.schema';
+import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({
   imports: [
@@ -22,10 +21,12 @@ import {
       { name: ReviewPost.name, schema: ReviewPostSchema },
       { name: User.name, schema: UserSchema },
       { name: Bookmark.name, schema: BookmarkSchema },
-      { name: LikePost.name, schema: LikePostSchema },
+      { name: Like.name, schema: LikeSchema },
       { name: Comment.name, schema: CommentSchema },
       { name: Notification.name, schema: NotificationSchema },
+      { name: Follow.name, schema: FollowSchema },
     ]),
+    NotificationModule,
   ],
   providers: [ReviewPostsService, JwtService],
   controllers: [ReviewPostsController],

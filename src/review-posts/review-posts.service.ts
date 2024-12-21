@@ -11,9 +11,12 @@ import { FindAllReviewPostDto } from './dto/findAllReviewPost.dto';
 import { User } from 'src/users/schema/user.schema';
 import { UpdateReviewPostDto } from './dto/updateReviewPost.dto';
 import { Bookmark } from 'src/bookmark/schema/bookmark.schema';
-import { LikePost } from 'src/like-posts/schema/likePost.schema';
 import { Comment } from 'src/comments/schema/comment.schema';
 import { Notification } from 'src/notification/schema/notification.schema';
+import { Like } from 'src/likes/schema/likes.schema';
+import { Follow } from 'src/follows/schema/follow.schema';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationGateway } from 'src/notification/notification.gateway';
 
 @Injectable()
 export class ReviewPostsService {
@@ -21,11 +24,15 @@ export class ReviewPostsService {
     @InjectModel(ReviewPost.name)
     private readonly reviewPostModel: Model<ReviewPost>,
     @InjectModel(User.name) private readonly userModel: Model<User>,
-    @InjectModel(Bookmark.name) private readonly bookmarkModel: Model<User>,
-    @InjectModel(LikePost.name) private readonly likePostModel: Model<User>,
-    @InjectModel(Comment.name) private readonly commentModel: Model<User>,
+    @InjectModel(Bookmark.name) private readonly bookmarkModel: Model<Bookmark>,
+    @InjectModel(Like.name) private readonly likeModel: Model<Like>,
+    @InjectModel(Comment.name) private readonly commentModel: Model<Comment>,
     @InjectModel(Notification.name)
-    private readonly notificationModel: Model<User>,
+    private readonly notificationModel: Model<Notification>,
+    @InjectModel(Follow.name)
+    private readonly followModel: Model<Follow>,
+    private readonly notificationService: NotificationService,
+    private readonly notificationGateway: NotificationGateway,
   ) {}
 
   async createReviewPost(
@@ -39,7 +46,31 @@ export class ReviewPostsService {
       categoryId: new Types.ObjectId(categoryId),
       locationId: new Types.ObjectId(locationId),
     });
-    return await newPost.save();
+
+    const savedPost = await newPost.save();
+
+    const followers = await this.followModel.find({
+      followingId: new Types.ObjectId(userId),
+    });
+
+    for (const follower of followers) {
+      const notificationMessage = `vừa đăng một bài viết mới: "${savedPost.title}"`;
+
+      await this.notificationService.createNotification(
+        follower.followerId.toString(),
+        userId,
+        savedPost._id.toString(),
+        notificationMessage,
+      );
+
+      this.notificationGateway.sendNotification(
+        follower.followerId.toString(),
+        userId,
+        savedPost._id.toString(),
+      );
+    }
+
+    return savedPost;
   }
 
   async findAllReviewPost(findAllReviewPostDto: FindAllReviewPostDto): Promise<{
@@ -48,14 +79,35 @@ export class ReviewPostsService {
     pageSize: number;
     totalPosts: number;
   }> {
-    const { page = 1, pageSize = 5, userId } = findAllReviewPostDto;
+    const {
+      page = 1,
+      pageSize = 5,
+      userId,
+      categoryId,
+      province,
+    } = findAllReviewPostDto;
 
     const query: any = {};
+
     if (userId) {
       query.userId = new Types.ObjectId(userId);
     }
+    if (categoryId) {
+      query.categoryId = new Types.ObjectId(categoryId);
+    }
 
-    const totalPosts = await this.reviewPostModel.countDocuments(query).exec();
+    const locationFilter =
+      province && province !== 'Tất cả' ? { province } : {};
+
+    const totalPosts = await this.reviewPostModel
+      .find(query)
+      .populate({
+        path: 'locationId',
+        match: locationFilter,
+      })
+      .countDocuments()
+      .exec();
+
     const posts = await this.reviewPostModel
       .find(query)
       .populate('categoryId')
@@ -191,7 +243,7 @@ export class ReviewPostsService {
 
     await Promise.all([
       this.bookmarkModel.deleteMany({ postId: objectIdPost }),
-      this.likePostModel.deleteMany({ postId: objectIdPost }),
+      this.likeModel.deleteMany({ postId: objectIdPost }),
       this.commentModel.deleteMany({ postId: objectIdPost }),
       this.notificationModel.deleteMany({ postId: objectIdPost }),
     ]);

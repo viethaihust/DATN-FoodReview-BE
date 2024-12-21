@@ -17,9 +17,9 @@ export class NotificationService {
     message: string,
   ) {
     const existingNotification = await this.notificationModel.findOne({
-      receiver,
-      sender,
-      postId,
+      receiver: new Types.ObjectId(receiver),
+      sender: new Types.ObjectId(sender),
+      postId: new Types.ObjectId(postId),
       message,
     });
 

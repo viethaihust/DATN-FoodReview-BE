@@ -10,7 +10,6 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { UploadModule } from './upload/upload.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
-import { LikePostsModule } from './like-posts/like-posts.module';
 import { ReviewPostsModule } from './review-posts/review-posts.module';
 import { NotificationModule } from './notification/notification.module';
 import { BookmarkModule } from './bookmark/bookmark.module';
@@ -18,6 +17,9 @@ import { RolesGuard } from './auth/guards/roles.guard';
 import { JwtGuard } from './auth/guards/jwt.guard';
 import { JwtService } from '@nestjs/jwt';
 import { LocationModule } from './location/location.module';
+import { LikesModule } from './likes/likes.module';
+import { ReadPostsModule } from './read-posts/read-posts.module';
+import { FollowsModule } from './follows/follows.module';
 
 @Module({
   imports: [
@@ -33,11 +35,13 @@ import { LocationModule } from './location/location.module';
     AuthModule,
     UploadModule,
     CloudinaryModule,
-    LikePostsModule,
+    LikesModule,
     ReviewPostsModule,
     NotificationModule,
     BookmarkModule,
     LocationModule,
+    ReadPostsModule,
+    FollowsModule,
   ],
   controllers: [AppController],
   providers: [

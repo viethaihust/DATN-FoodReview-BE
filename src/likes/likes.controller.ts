@@ -1,11 +1,10 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { LikePostsService } from './like-posts.service';
-import { Public } from 'src/auth/decorators/public.decorator';
 import { LikePostDto } from './dto/likePost.dto';
+import { LikesService } from './likes.service';
 
 @Controller('like-posts')
-export class LikePostsController {
-  constructor(private readonly likePostsService: LikePostsService) {}
+export class LikesController {
+  constructor(private readonly likePostsService: LikesService) {}
 
   @Post()
   async toggleLike(@Body() likePostDto: LikePostDto) {

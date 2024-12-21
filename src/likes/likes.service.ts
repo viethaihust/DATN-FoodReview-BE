@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { LikePost } from './schema/likePost.schema';
 import { LikePostDto } from './dto/likePost.dto';
 import { ReviewPost } from 'src/review-posts/schema/reviewPost.schema';
 import { NotificationService } from 'src/notification/notification.service';
 import { User } from 'src/users/schema/user.schema';
 import { NotificationGateway } from 'src/notification/notification.gateway';
+import { Like } from './schema/likes.schema';
 
 @Injectable()
-export class LikePostsService {
+export class LikesService {
   constructor(
-    @InjectModel(LikePost.name) private readonly likePostModel: Model<LikePost>,
+    @InjectModel(Like.name) private readonly likeModel: Model<Like>,
     @InjectModel(ReviewPost.name)
     private readonly reviewPostModel: Model<ReviewPost>,
     @InjectModel(User.name) private readonly userModel: Model<any>,
@@ -19,13 +19,13 @@ export class LikePostsService {
     private readonly notificationGateway: NotificationGateway,
   ) {}
 
-  async toggleLike(likePostDto: LikePostDto): Promise<LikePost | null> {
+  async toggleLike(likePostDto: LikePostDto): Promise<Like | null> {
     const { userId, postId } = likePostDto;
 
     const objectIdUser = new Types.ObjectId(userId);
     const objectIdPost = new Types.ObjectId(postId);
 
-    const existingLike = await this.likePostModel.findOne({
+    const existingLike = await this.likeModel.findOne({
       userId: objectIdUser,
       postId: objectIdPost,
     });
@@ -45,7 +45,7 @@ export class LikePostsService {
     }
 
     if (existingLike) {
-      await this.likePostModel.deleteOne({ _id: existingLike._id });
+      await this.likeModel.deleteOne({ _id: existingLike._id });
 
       await this.reviewPostModel.findByIdAndUpdate(postId, {
         $inc: { likesCount: -1 },
@@ -53,7 +53,7 @@ export class LikePostsService {
 
       return null;
     } else {
-      const newLikePost = new this.likePostModel({
+      const newLikePost = new this.likeModel({
         userId: objectIdUser,
         postId: objectIdPost,
       });
@@ -85,7 +85,7 @@ export class LikePostsService {
     const objectIdUser = new Types.ObjectId(userId);
     const objectIdPost = new Types.ObjectId(postId);
 
-    const like = await this.likePostModel.findOne({
+    const like = await this.likeModel.findOne({
       userId: objectIdUser,
       postId: objectIdPost,
     });

@@ -10,7 +10,7 @@ export class ReviewPost extends Document {
   @Prop({ required: true })
   content: string;
   @Prop({ required: true })
-  images: string[];
+  files: string[];
   @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
   categoryId: Types.ObjectId;
   @Prop({ type: Types.ObjectId, ref: 'Location', required: true })

@@ -15,7 +15,7 @@ export class UpdateReviewPostDto {
 
   @IsArray()
   @IsNotEmpty()
-  images: Array<string>;
+  files: Array<string>;
 
   @IsMongoId()
   @IsNotEmpty()

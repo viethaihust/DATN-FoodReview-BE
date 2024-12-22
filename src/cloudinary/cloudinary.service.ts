@@ -8,7 +8,13 @@ const streamifier = require('streamifier');
 export class CloudinaryService {
   uploadFile(file: Express.Multer.File): Promise<CloudinaryResponse> {
     return new Promise<CloudinaryResponse>((resolve, reject) => {
+      // Determine resource type based on MIME type
+      const resourceType = file.mimetype.startsWith('video/')
+        ? 'video'
+        : 'image';
+
       const uploadStream = cloudinary.uploader.upload_stream(
+        { resource_type: resourceType },
         (error, result) => {
           if (error) return reject(error);
           resolve(result);
@@ -18,6 +24,7 @@ export class CloudinaryService {
       streamifier.createReadStream(file.buffer).pipe(uploadStream);
     });
   }
+
   deleteFile(publicId: string): Promise<CloudinaryResponse> {
     return new Promise<CloudinaryResponse>((resolve, reject) => {
       cloudinary.uploader.destroy(publicId, (error, result) => {

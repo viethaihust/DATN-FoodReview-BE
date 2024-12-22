@@ -150,7 +150,6 @@ export class AuthService {
   }
 
   async sendMagicLink(email: string): Promise<void> {
-    console.log(email);
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {

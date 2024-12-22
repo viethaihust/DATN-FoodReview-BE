@@ -42,18 +42,25 @@ export const multerLocalOptions = {
 
 export const multerOptions = {
   limits: {
-    fileSize: 1024 * 1024 * 50,
+    fileSize: 1024 * 1024 * 10, // 10 MB
   },
   fileFilter: (req, file, cb) => {
-    if (
-      file.mimetype === 'image/jpeg' ||
-      file.mimetype === 'image/jpg' ||
-      file.mimetype === 'image/png'
-    ) {
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'video/mp4',
+      'video/mpeg',
+      'video/quicktime',
+    ];
+
+    if (allowedMimeTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
       cb(
-        new UnprocessableEntityException('Chỉ chấp nhận ảnh jpg, jpeg, png'),
+        new UnprocessableEntityException(
+          'Chỉ chấp nhận file ảnh (jpg, jpeg, png) hoặc video (mp4, mpeg, mov)',
+        ),
         false,
       );
     }

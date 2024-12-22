@@ -17,6 +17,7 @@ import { Like } from 'src/likes/schema/likes.schema';
 import { Follow } from 'src/follows/schema/follow.schema';
 import { NotificationService } from 'src/notification/notification.service';
 import { NotificationGateway } from 'src/notification/notification.gateway';
+import { Location } from 'src/location/schema/location.schema';
 
 @Injectable()
 export class ReviewPostsService {
@@ -31,6 +32,7 @@ export class ReviewPostsService {
     private readonly notificationModel: Model<Notification>,
     @InjectModel(Follow.name)
     private readonly followModel: Model<Follow>,
+    @InjectModel(Location.name) private readonly locationModel: Model<Location>,
     private readonly notificationService: NotificationService,
     private readonly notificationGateway: NotificationGateway,
   ) {}
@@ -48,6 +50,21 @@ export class ReviewPostsService {
     });
 
     const savedPost = await newPost.save();
+
+    if (locationId) {
+      const location = await this.locationModel.findById(locationId);
+      if (location) {
+        const { averageRating = 0, totalRatingsCount = 0 } = location;
+        const newAverage =
+          (averageRating * totalRatingsCount +
+            createReviewPostDto.ratings.overall) /
+          (totalRatingsCount + 1);
+
+        location.averageRating = newAverage;
+        location.totalRatingsCount = totalRatingsCount + 1;
+        await location.save();
+      }
+    }
 
     const followers = await this.followModel.find({
       followingId: new Types.ObjectId(userId),
@@ -84,6 +101,7 @@ export class ReviewPostsService {
       pageSize = 5,
       userId,
       categoryId,
+      locationId,
       province,
     } = findAllReviewPostDto;
 
@@ -94,6 +112,10 @@ export class ReviewPostsService {
     }
     if (categoryId) {
       query.categoryId = new Types.ObjectId(categoryId);
+    }
+
+    if (locationId) {
+      query.locationId = new Types.ObjectId(locationId);
     }
 
     const locationFilter =
@@ -137,6 +159,12 @@ export class ReviewPostsService {
   async search(query: string) {
     const regex = new RegExp(query, 'i');
 
+    const locationResults = await this.locationModel
+      .find({
+        $or: [{ name: { $regex: regex } }, { address: { $regex: regex } }],
+      })
+      .exec();
+
     const userResults = await this.userModel
       .find({ name: { $regex: regex } })
       .exec();
@@ -150,7 +178,11 @@ export class ReviewPostsService {
       .populate('locationId')
       .exec();
 
-    return { users: userResults, posts: postResults };
+    return {
+      locations: locationResults,
+      users: userResults,
+      posts: postResults,
+    };
   }
 
   async updatePost(
@@ -165,15 +197,18 @@ export class ReviewPostsService {
     }
 
     if (post.userId.toString() !== decodedUserId) {
-      throw new UnauthorizedException('Bạn không có quyền xóa bài post này');
+      throw new UnauthorizedException('Bạn không có quyền sửa bài post này');
     }
 
-    const { userId, categoryId, locationId } = updateData;
+    const { userId, categoryId, locationId, ratings } = updateData;
     const objectIdUser = new Types.ObjectId(userId);
     const objectIdCategory = new Types.ObjectId(categoryId);
     const objectIdLocation = new Types.ObjectId(locationId);
 
-    return this.reviewPostModel
+    const oldLocationId = post.locationId;
+    const oldRating = post.ratings.overall;
+
+    const updatedPost = await this.reviewPostModel
       .findByIdAndUpdate(
         postId,
         {
@@ -185,6 +220,50 @@ export class ReviewPostsService {
         { new: true },
       )
       .exec();
+
+    if (locationId) {
+      if (oldLocationId.toString() !== locationId.toString()) {
+        const newLocation = await this.locationModel.findById(locationId);
+        if (newLocation) {
+          const { averageRating = 0, totalRatingsCount = 0 } = newLocation;
+
+          const newAverage =
+            (averageRating * totalRatingsCount + ratings.overall) /
+            (totalRatingsCount + 1);
+
+          newLocation.averageRating = newAverage;
+          newLocation.totalRatingsCount = totalRatingsCount + 1;
+          await newLocation.save();
+        }
+
+        const oldLocation = await this.locationModel.findById(oldLocationId);
+        if (oldLocation) {
+          const { averageRating = 0, totalRatingsCount = 1 } = oldLocation;
+
+          const oldNewAverage =
+            (averageRating * totalRatingsCount - oldRating) /
+            (totalRatingsCount - 1);
+
+          oldLocation.averageRating = oldNewAverage;
+          oldLocation.totalRatingsCount = totalRatingsCount - 1;
+          await oldLocation.save();
+        }
+      } else {
+        const location = await this.locationModel.findById(locationId);
+        if (location) {
+          const { averageRating = 0, totalRatingsCount = 0 } = location;
+
+          const newAverage =
+            (averageRating * totalRatingsCount - oldRating + ratings.overall) /
+            totalRatingsCount;
+
+          location.averageRating = newAverage;
+          await location.save();
+        }
+      }
+    }
+
+    return updatedPost;
   }
 
   async getRandomPosts(excludedPostId: string): Promise<ReviewPost[]> {

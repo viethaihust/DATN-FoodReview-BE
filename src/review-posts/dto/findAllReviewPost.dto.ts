@@ -24,5 +24,9 @@ export class FindAllReviewPostDto {
 
   @IsOptional()
   @IsString()
+  locationId?: string;
+
+  @IsOptional()
+  @IsString()
   province?: string;
 }

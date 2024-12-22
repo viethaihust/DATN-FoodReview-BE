@@ -14,6 +14,7 @@ import {
 import { Like, LikeSchema } from 'src/likes/schema/likes.schema';
 import { Follow, FollowSchema } from 'src/follows/schema/follow.schema';
 import { NotificationModule } from 'src/notification/notification.module';
+import { Location, LocationSchema } from 'src/location/schema/location.schema';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { NotificationModule } from 'src/notification/notification.module';
       { name: Comment.name, schema: CommentSchema },
       { name: Notification.name, schema: NotificationSchema },
       { name: Follow.name, schema: FollowSchema },
+      { name: Location.name, schema: LocationSchema },
     ]),
     NotificationModule,
   ],

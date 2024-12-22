@@ -20,6 +20,10 @@ export class Location extends Document {
     lat: number;
     lng: number;
   };
+  @Prop({ required: false })
+  averageRating?: number;
+  @Prop({ required: false })
+  totalRatingsCount?: number;
 }
 
 export const LocationSchema = SchemaFactory.createForClass(Location);

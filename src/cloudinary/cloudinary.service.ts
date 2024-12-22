@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryResponse } from './types/cloudinary-response';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+
 const streamifier = require('streamifier');
 
 @Injectable()
 export class CloudinaryService {
   uploadFile(file: Express.Multer.File): Promise<CloudinaryResponse> {
     return new Promise<CloudinaryResponse>((resolve, reject) => {
-      // Determine resource type based on MIME type
       const resourceType = file.mimetype.startsWith('video/')
         ? 'video'
         : 'image';

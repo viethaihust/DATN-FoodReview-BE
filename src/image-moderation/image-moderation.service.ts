@@ -1,26 +1,40 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import * as vision from '@google-cloud/vision';
+import { ImageAnnotatorClient } from '@google-cloud/vision';
 
 @Injectable()
 export class ImageModerationService {
-  private client: vision.ImageAnnotatorClient;
+  private client: ImageAnnotatorClient;
 
-  constructor() {
-    this.client = new vision.ImageAnnotatorClient({
-      keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-    });
+  private async getClient() {
+    if (!this.client) {
+      try {
+        this.client = new ImageAnnotatorClient({
+          keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+        });
+      } catch (error) {
+        throw new BadRequestException(
+          'Failed to initialize Google Cloud Vision client.',
+        );
+      }
+    }
+    return this.client;
   }
 
   async analyzeImage(file: Express.Multer.File): Promise<boolean> {
     try {
-      const [result] = await this.client.safeSearchDetection(file.buffer);
+      const client = await this.getClient();
+      if (file.mimetype.startsWith('video/')) {
+        return true;
+      }
+
+      const [result] = await client.safeSearchDetection(file.buffer);
       const detections = result.safeSearchAnnotation;
 
       if (!detections) {
         throw new BadRequestException('Failed to analyze image.');
       }
 
-      const { adult, violence, racy } = detections;
+      const { adult, racy } = detections;
 
       if (
         adult === 'LIKELY' ||
@@ -33,8 +47,7 @@ export class ImageModerationService {
 
       return true; // Safe content
     } catch (error) {
-      console.error('Error analyzing image:', error);
-      throw new BadRequestException('Error processing the image.');
+      throw new BadRequestException(`Error analyzing image: ${error.message}`);
     }
   }
 }

@@ -18,8 +18,10 @@ import { JwtService } from '@nestjs/jwt';
 import { LocationModule } from './location/location.module';
 import { LikesModule } from './likes/likes.module';
 import { FollowsModule } from './follows/follows.module';
-import { ReadModule } from './read/read-posts.module';
+import { ViewedModule } from './viewed/viewed.module';
 import { ImageModerationService } from './image-moderation/image-moderation.service';
+import { ImageModerationController } from './image-moderation/image-moderation.controller';
+import { ImageModerationModule } from './image-moderation/image-moderation.module';
 
 @Module({
   imports: [
@@ -42,13 +44,15 @@ import { ImageModerationService } from './image-moderation/image-moderation.serv
     NotificationModule,
     BookmarkModule,
     LocationModule,
-    ReadModule,
     FollowsModule,
+    ViewedModule,
+    ImageModerationModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, ImageModerationController],
   providers: [
     AppService,
     JwtService,
+    ImageModerationService,
     {
       provide: 'APP_GUARD',
       useClass: JwtGuard,
@@ -57,7 +61,6 @@ import { ImageModerationService } from './image-moderation/image-moderation.serv
       provide: 'APP_GUARD',
       useClass: RolesGuard,
     },
-    ImageModerationService,
   ],
 })
 export class AppModule {}

@@ -46,15 +46,6 @@ export class UploadController {
       );
     }
 
-    for (const file of files) {
-      const isSafe = await this.moderationService.analyzeImage(file);
-      if (!isSafe) {
-        throw new UnprocessableEntityException(
-          `Tệp ${file.originalname} chứa nội dung không an toàn.`,
-        );
-      }
-    }
-
     return await this.cloudinaryService.uploadFiles(files);
   }
 }

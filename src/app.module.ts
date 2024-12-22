@@ -19,6 +19,7 @@ import { LocationModule } from './location/location.module';
 import { LikesModule } from './likes/likes.module';
 import { FollowsModule } from './follows/follows.module';
 import { ReadModule } from './read/read-posts.module';
+import { ImageModerationService } from './image-moderation/image-moderation.service';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { ReadModule } from './read/read-posts.module';
       provide: 'APP_GUARD',
       useClass: RolesGuard,
     },
+    ImageModerationService,
   ],
 })
 export class AppModule {}

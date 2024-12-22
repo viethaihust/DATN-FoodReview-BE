@@ -8,34 +8,51 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from 'src/utils/multer';
-import { UploadService } from './upload.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { Public } from 'src/auth/decorators/public.decorator';
+import { ImageModerationService } from 'src/image-moderation/image-moderation.service';
 
 @Controller('upload')
 export class UploadController {
   constructor(
-    private readonly uploadService: UploadService,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly moderationService: ImageModerationService,
   ) {}
 
-  @Public()
   @Post('one-image')
   @UseInterceptors(FileInterceptor('image', multerOptions))
   async uploadOneImage(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
-      throw new UnprocessableEntityException('Hãy upload một ảnh');
+      throw new UnprocessableEntityException(
+        'Vui lòng tải lên ít nhất một tệp.',
+      );
+    }
+
+    const isSafe = await this.moderationService.analyzeImage(file);
+    if (!isSafe) {
+      throw new UnprocessableEntityException(
+        'Tệp chứa nội dung không an toàn.',
+      );
     }
 
     return await this.cloudinaryService.uploadFile(file);
   }
 
-  @Public()
   @Post('many-files')
   @UseInterceptors(FilesInterceptor('files', 10, multerOptions))
-  async uploadManyFiles(@UploadedFiles() files: Array<Express.Multer.File>) {
+  async uploadManyFiles(@UploadedFiles() files: Express.Multer.File[]) {
     if (!files || files.length === 0) {
-      throw new UnprocessableEntityException('Hãy upload ít nhất một file');
+      throw new UnprocessableEntityException(
+        'Vui lòng tải lên ít nhất một tệp.',
+      );
+    }
+
+    for (const file of files) {
+      const isSafe = await this.moderationService.analyzeImage(file);
+      if (!isSafe) {
+        throw new UnprocessableEntityException(
+          `Tệp ${file.originalname} chứa nội dung không an toàn.`,
+        );
+      }
     }
 
     return await this.cloudinaryService.uploadFiles(files);

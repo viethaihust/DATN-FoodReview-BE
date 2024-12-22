@@ -1,27 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { ReadPost } from './schema/readPost.schema';
-import { CreateReadPostDto } from './dto/createReadPost.dto';
+import { Read } from './schema/read.schema';
+import { CreateReadDto } from './dto/createReadPost.dto';
 
 @Injectable()
-export class ReadPostsService {
+export class ReadService {
   constructor(
-    @InjectModel('ReadPost') private readonly readPostModel: Model<ReadPost>,
+    @InjectModel(Read.name) private readonly readModel: Model<Read>,
   ) {}
 
-  async markAsRead(createReadPostDto: CreateReadPostDto) {
-    const { userId, postId } = createReadPostDto;
+  async markAsRead(createReadDto: CreateReadDto) {
+    const { userId, postId } = createReadDto;
     const objectIdUser = new Types.ObjectId(userId);
     const objectIdPost = new Types.ObjectId(postId);
 
-    const existingEntry = await this.readPostModel.findOne({
+    const existingEntry = await this.readModel.findOne({
       userId: objectIdUser,
       postId: objectIdPost,
     });
 
     if (!existingEntry) {
-      return this.readPostModel.create({
+      return this.readModel.create({
         userId: objectIdUser,
         postId: objectIdPost,
       });

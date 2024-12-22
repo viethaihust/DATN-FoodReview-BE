@@ -4,7 +4,6 @@ import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { CategoriesModule } from './categories/categories.module';
-import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
@@ -18,8 +17,8 @@ import { JwtGuard } from './auth/guards/jwt.guard';
 import { JwtService } from '@nestjs/jwt';
 import { LocationModule } from './location/location.module';
 import { LikesModule } from './likes/likes.module';
-import { ReadPostsModule } from './read-posts/read-posts.module';
 import { FollowsModule } from './follows/follows.module';
+import { ReadModule } from './read/read-posts.module';
 
 @Module({
   imports: [
@@ -27,8 +26,10 @@ import { FollowsModule } from './follows/follows.module';
       envFilePath: '.env',
       isGlobal: true,
     }),
-    MongooseModule.forRoot(process.env.MONGODB_URI),
-    PostsModule,
+    MongooseModule.forRoot(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 30000,
+    }),
     CategoriesModule,
     CommentsModule,
     UsersModule,
@@ -40,7 +41,7 @@ import { FollowsModule } from './follows/follows.module';
     NotificationModule,
     BookmarkModule,
     LocationModule,
-    ReadPostsModule,
+    ReadModule,
     FollowsModule,
   ],
   controllers: [AppController],

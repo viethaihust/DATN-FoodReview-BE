@@ -1,6 +1,6 @@
 import { IsMongoId, IsNotEmpty } from 'class-validator';
 
-export class CreateReadPostDto {
+export class CreateReadDto {
   @IsNotEmpty()
   @IsMongoId()
   userId: string;

@@ -11,7 +11,7 @@ import { UsersService } from 'src/users/users.service';
 import { User } from 'src/users/schema/user.schema';
 import { GoogleLoginDto } from './dto/googleLogin.dto';
 import * as nodemailer from 'nodemailer';
-import { ChangePasswordDto } from './dto/changePassword.dto';
+import { ForgotPasswordDto } from './dto/forgotPassword.dto';
 
 const EXPIRE_TIME = 30 * 60 * 60 * 24 * 1000;
 
@@ -180,8 +180,8 @@ export class AuthService {
     });
   }
 
-  async changePassword(changePasswordDto: ChangePasswordDto): Promise<string> {
-    const { token, password } = changePasswordDto;
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<string> {
+    const { token, password } = forgotPasswordDto;
     try {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET_KEY,
@@ -201,6 +201,38 @@ export class AuthService {
       return 'Password changed successfully.';
     } catch (error) {
       throw new BadRequestException('Token không hợp lệ hoặc bị thiếu.');
+    }
+  }
+
+  async resetPassword(
+    userId: string,
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<string> {
+    try {
+      const user = await this.usersService.findById(userId);
+
+      if (!user) {
+        throw new NotFoundException('User not found.');
+      }
+
+      const isOldPasswordValid = await compare(oldPassword, user.password);
+
+      if (!isOldPasswordValid) {
+        throw new BadRequestException('Old password is incorrect.');
+      }
+
+      const hashedPassword = await hash(newPassword, 10);
+
+      user.password = hashedPassword;
+
+      await user.save();
+
+      return 'Password has been successfully reset.';
+    } catch (error) {
+      throw new BadRequestException(
+        'Error resetting password: ' + error.message,
+      );
     }
   }
 }

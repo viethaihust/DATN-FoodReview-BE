@@ -4,7 +4,9 @@ import {
   Controller,
   Post,
   Query,
+  Req,
   Request,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/createUser.dto';
@@ -14,13 +16,16 @@ import { LoginDto } from './dto/login.dto';
 import { RefreshJwtGuard } from './guards/refresh.guard';
 import { Public } from './decorators/public.decorator';
 import { GoogleLoginDto } from './dto/googleLogin.dto';
-import { ChangePasswordDto } from './dto/changePassword.dto';
+import { ForgotPasswordDto } from './dto/forgotPassword.dto';
+import { ResetPasswordDto } from './dto/resetPassword.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
   ) {}
 
   @Public()
@@ -56,17 +61,46 @@ export class AuthController {
   }
 
   @Public()
-  @Post('change-password')
-  async changePassword(
-    @Body() changePasswordDto: ChangePasswordDto,
+  @Post('forgot-password')
+  async forgotPassword(
+    @Body() forgotPasswordDto: ForgotPasswordDto,
   ): Promise<{ message: string }> {
-    const { token, password } = changePasswordDto;
+    const { token, password } = forgotPasswordDto;
 
     if (!token || !password) {
       throw new BadRequestException('Token and password are required.');
     }
 
-    const message = await this.authService.changePassword(changePasswordDto);
+    const message = await this.authService.forgotPassword(forgotPasswordDto);
+    return { message };
+  }
+
+  @Post('reset-password')
+  async resetPassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+    @Req() req: any,
+  ) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      throw new UnauthorizedException('Authorization header is missing');
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decodedToken = this.jwtService.decode(token) as { _id: string };
+
+    if (!decodedToken) {
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    const { oldPassword, password } = resetPasswordDto;
+
+    const message = await this.authService.resetPassword(
+      decodedToken._id,
+      oldPassword,
+      password,
+    );
+
     return { message };
   }
 }

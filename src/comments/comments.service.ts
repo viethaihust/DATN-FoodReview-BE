@@ -23,7 +23,10 @@ export class CommentsService {
       query.postId = new Types.ObjectId(postId);
     }
 
-    return this.commentModel.find(query).populate('userId', '_id name').exec();
+    return this.commentModel
+      .find(query)
+      .populate('userId', '_id name image')
+      .exec();
   }
 
   async findReplies(parentCommentId?: string): Promise<Comment[]> {
@@ -33,7 +36,7 @@ export class CommentsService {
 
     const replies = await this.commentModel
       .find({ parentCommentId: new Types.ObjectId(parentCommentId) })
-      .populate('userId', '_id name')
+      .populate('userId', '_id name image')
       .exec();
 
     if (!replies.length) {

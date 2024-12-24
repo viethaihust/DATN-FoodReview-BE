@@ -319,6 +319,7 @@ export class ReviewPostsService {
     }
 
     const objectIdPost = new Types.ObjectId(postId);
+    const locationId = post.locationId;
 
     await Promise.all([
       this.bookmarkModel.deleteMany({ postId: objectIdPost }),
@@ -328,6 +329,25 @@ export class ReviewPostsService {
     ]);
 
     await this.reviewPostModel.findByIdAndDelete(objectIdPost).exec();
+
+    if (locationId) {
+      const location = await this.locationModel.findById(locationId);
+      if (location) {
+        const { averageRating = 0, totalRatingsCount = 0 } = location;
+        const postRating = post.ratings.overall;
+
+        const newTotalRatingsCount = totalRatingsCount - 1;
+        const newAverageRating =
+          newTotalRatingsCount > 0
+            ? (averageRating * totalRatingsCount - postRating) /
+              newTotalRatingsCount
+            : 0;
+
+        location.averageRating = newAverageRating;
+        location.totalRatingsCount = newTotalRatingsCount;
+        await location.save();
+      }
+    }
 
     return post;
   }

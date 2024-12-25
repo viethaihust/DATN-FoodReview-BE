@@ -34,9 +34,11 @@ export class ImageModerationService {
         throw new BadRequestException('Failed to analyze image.');
       }
 
-      const { adult, racy } = detections;
+      const { adult, racy, violence } = detections;
 
       if (
+        violence === 'LIKELY' ||
+        violence === 'VERY_LIKELY' ||
         adult === 'LIKELY' ||
         adult === 'VERY_LIKELY' ||
         racy === 'LIKELY' ||

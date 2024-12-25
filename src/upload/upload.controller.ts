@@ -38,11 +38,17 @@ export class UploadController {
   }
 
   @Post('many-files')
-  @UseInterceptors(FilesInterceptor('files', 10, multerOptions))
+  @UseInterceptors(FilesInterceptor('files', 6, multerOptions))
   async uploadManyFiles(@UploadedFiles() files: Express.Multer.File[]) {
     if (!files || files.length === 0) {
       throw new UnprocessableEntityException(
         'Vui lòng tải lên ít nhất một tệp.',
+      );
+    }
+
+    if (files.length > 5) {
+      throw new UnprocessableEntityException(
+        'Chỉ có thể tải lên tối đa 5 tệp.',
       );
     }
 

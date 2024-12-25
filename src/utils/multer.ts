@@ -20,7 +20,7 @@ export const functionStorage = (path: string) => {
 export const multerLocalOptions = {
   storage: functionStorage('truyền vào đường dẫn lưu file'),
   limits: {
-    fileSize: 1024 * 1024 * 50,
+    fileSize: 1024 * 1024 * 20,
   },
   fileFilter: (req, file, cb) => {
     if (
@@ -42,7 +42,7 @@ export const multerLocalOptions = {
 
 export const multerOptions = {
   limits: {
-    fileSize: 1024 * 1024 * 10, // 10 MB
+    fileSize: 1024 * 1024 * 20, // 20 MB
   },
   fileFilter: (req, file, cb) => {
     const allowedMimeTypes = [

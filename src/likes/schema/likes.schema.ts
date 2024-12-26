@@ -5,7 +5,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 export class Like extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId;
-  @Prop({ type: Types.ObjectId, ref: 'Post', required: true })
+  @Prop({ type: Types.ObjectId, ref: 'ReviewPost', required: true })
   postId: Types.ObjectId;
 }
 

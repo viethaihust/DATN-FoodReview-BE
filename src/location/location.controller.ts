@@ -14,6 +14,12 @@ export class LocationController {
   }
 
   @Public()
+  @Get()
+  async findAllLocations() {
+    return this.locationService.findAll();
+  }
+
+  @Public()
   @Get('search')
   async searchLocations(@Query('query') query: string) {
     return this.locationService.search(query);

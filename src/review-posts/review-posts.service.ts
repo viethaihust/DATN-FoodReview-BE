@@ -119,7 +119,7 @@ export class ReviewPostsService {
     }
 
     const locationFilter =
-      province && province !== 'Tất cả' ? { province } : {};
+      province && province !== 'Toàn quốc' ? { province } : {};
 
     const totalPosts = await this.reviewPostModel
       .find(query)
@@ -154,6 +154,15 @@ export class ReviewPostsService {
       throw new NotFoundException('Không tìm thấy bài post');
     }
     return post;
+  }
+
+  async findManyByIds(postIds: Types.ObjectId[]): Promise<ReviewPost[]> {
+    return this.reviewPostModel
+      .find({ _id: { $in: postIds } })
+      .populate('userId', 'name image')
+      .populate('categoryId')
+      .populate('locationId')
+      .exec();
   }
 
   async search(query: string) {

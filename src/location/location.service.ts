@@ -29,4 +29,8 @@ export class LocationService {
     }
     return location;
   }
+
+  async findAll(): Promise<Location[]> {
+    return this.locationModel.find().exec();
+  }
 }

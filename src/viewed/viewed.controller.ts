@@ -4,10 +4,10 @@ import { CreateViewedDto } from './dto/createViewed.dto';
 
 @Controller('viewed')
 export class ViewedController {
-  constructor(private readonly readService: ViewedService) {}
+  constructor(private readonly viewedService: ViewedService) {}
 
   @Post()
   async markAsRead(@Body() createViewedDto: CreateViewedDto) {
-    return this.readService.markAsRead(createViewedDto);
+    return this.viewedService.markAsRead(createViewedDto);
   }
 }

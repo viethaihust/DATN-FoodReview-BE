@@ -19,9 +19,9 @@ import { LocationModule } from './location/location.module';
 import { LikesModule } from './likes/likes.module';
 import { FollowsModule } from './follows/follows.module';
 import { ViewedModule } from './viewed/viewed.module';
-import { ImageModerationService } from './image-moderation/image-moderation.service';
-import { ImageModerationController } from './image-moderation/image-moderation.controller';
 import { ImageModerationModule } from './image-moderation/image-moderation.module';
+import { UserInteractionModule } from './user-interaction/user-interaction.module';
+import { RecommendationModule } from './recommendation/recommendation.module';
 
 @Module({
   imports: [
@@ -47,12 +47,13 @@ import { ImageModerationModule } from './image-moderation/image-moderation.modul
     FollowsModule,
     ViewedModule,
     ImageModerationModule,
+    UserInteractionModule,
+    RecommendationModule,
   ],
-  controllers: [AppController, ImageModerationController],
+  controllers: [AppController],
   providers: [
     AppService,
     JwtService,
-    ImageModerationService,
     {
       provide: 'APP_GUARD',
       useClass: JwtGuard,

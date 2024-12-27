@@ -7,22 +7,34 @@ export class RecommendationController {
   constructor(private readonly recommendationService: RecommendationService) {}
 
   @Public()
-  @Get(':postId1/:postId2')
+  @Get('/similar-between-posts/:postId1/:postId2')
   async getCosineSimilarity(
     @Param('postId1') postId1: string,
     @Param('postId2') postId2: string,
   ) {
     const similarity =
-      await this.recommendationService.calculateCosineSimilarity(
+      await this.recommendationService.calculateCosineSimilarityBetweenPosts(
         postId1,
         postId2,
       );
     return { similarity };
   }
 
-  //   @Public()
-  //   @Get(':userId')
-  //   async getRecommendations(@Param('userId') userId: string) {
-  //     return this.recommendationService.recommendPosts(userId);
-  //   }
+  @Public()
+  @Get('/test')
+  async getTest() {
+    return this.recommendationService.calculateSimilaritiesForAllPosts();
+  }
+
+  @Public()
+  @Get('/similar-posts/:id')
+  async getSimilar(@Param('id') id: string) {
+    return this.recommendationService.getSimilarPosts(id);
+  }
+
+  @Public()
+  @Get('/for-user/:userId')
+  async getRecommendations(@Param('userId') userId: string) {
+    return this.recommendationService.getRecommendationsForUser(userId);
+  }
 }

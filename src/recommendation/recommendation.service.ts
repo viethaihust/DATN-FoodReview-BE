@@ -1,134 +1,279 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { TfIdf } from 'natural';
-import { ReviewPostsService } from 'src/review-posts/review-posts.service';
+import { Model } from 'mongoose';
 import { ReviewPost } from 'src/review-posts/schema/reviewPost.schema';
 import { UserInteractionService } from 'src/user-interaction/user-interaction.service';
 import { Recommendation } from './schema/recommendation.schema';
+import { ReviewPostsService } from 'src/review-posts/review-posts.service';
 
 @Injectable()
 export class RecommendationService {
   constructor(
-    private readonly userInteractionService: UserInteractionService,
-    private readonly reviewPostsService: ReviewPostsService,
     @InjectModel(ReviewPost.name) private postModel: Model<ReviewPost>,
     @InjectModel(Recommendation.name)
-    private recommendationModel: Model<Recommendation>,
+    private readonly recommendationModel: Model<Recommendation>,
+    private readonly userInteractionService: UserInteractionService,
+    private readonly reviewPostsService: ReviewPostsService,
   ) {}
 
-  private preprocessText(text: string): string[] {
-    const normalizedText = text
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
-    const tokens = normalizedText.split(/\s+/);
-    return tokens.filter((token) => token.length > 0);
+  private globalVocabulary: Set<string> = new Set();
+  private documentFrequencies: Map<string, number> = new Map();
+  private termFrequencyVectors: Map<number, Map<string, number>> = new Map();
+
+  private tokenize(text: string): string[] {
+    return text
+      .toLowerCase()
+      .split(/[^a-zA-Z0-9À-ſ]+/)
+      .filter((token) => token.trim().length > 0);
   }
 
-  private getPostVector(post: ReviewPost): number[] {
-    const cleanedTitle = this.preprocessText(post.title);
-    const cleanedContent = this.preprocessText(post.content);
+  private buildVocabulary(posts: ReviewPost[]): void {
+    this.globalVocabulary.clear();
+    this.documentFrequencies.clear();
 
-    const allTerms = cleanedTitle.concat(cleanedContent);
-    const localTfIdf = new TfIdf();
-    localTfIdf.addDocument(allTerms.join(' '));
+    posts.forEach((post, index) => {
+      const tokens = new Set(this.tokenize(`${post.title} ${post.content}`));
+      tokens.forEach((token) => {
+        this.globalVocabulary.add(token);
+        this.documentFrequencies.set(
+          token,
+          (this.documentFrequencies.get(token) || 0) + 1,
+        );
+      });
+    });
+  }
 
-    const vector: number[] = [];
-    allTerms.forEach((term) => {
-      const tfidfScore = localTfIdf.tfidf(term, 0);
-      vector.push(tfidfScore || 0);
+  private calculateTermFrequency(posts: ReviewPost[]): void {
+    this.termFrequencyVectors.clear();
+
+    posts.forEach((post, index) => {
+      const tokens = this.tokenize(`${post.title} ${post.content}`);
+      const termCount: Map<string, number> = new Map();
+
+      tokens.forEach((token) => {
+        termCount.set(token, (termCount.get(token) || 0) + 1);
+      });
+
+      const termFrequency: Map<string, number> = new Map();
+      const totalTerms = tokens.length;
+
+      termCount.forEach((count, token) => {
+        termFrequency.set(token, count / totalTerms);
+      });
+
+      this.termFrequencyVectors.set(index, termFrequency);
+    });
+  }
+
+  private normalizeVector(vector: number[]): number[] {
+    const magnitude = Math.sqrt(
+      vector.reduce((sum, value) => sum + value * value, 0),
+    );
+    return magnitude === 0 ? vector : vector.map((value) => value / magnitude);
+  }
+
+  private calculateTfIdfVector(docIndex: number): number[] {
+    const termFrequency = this.termFrequencyVectors.get(docIndex);
+    if (!termFrequency) return [];
+
+    const vector: number[] = Array.from(this.globalVocabulary).map((token) => {
+      const tf = termFrequency.get(token) || 0;
+      const df = this.documentFrequencies.get(token) || 1;
+      const idf = Math.log(this.termFrequencyVectors.size / df);
+      return tf * idf;
     });
 
     return this.normalizeVector(vector);
   }
 
-  private normalizeVector(vector: number[]): number[] {
-    const magnitude = Math.sqrt(vector.reduce((sum, val) => sum + val ** 2, 0));
-    return vector.map((val) => (magnitude ? val / magnitude : 0));
-  }
-
-  private cosineSimilarity(vecA: number[], vecB: number[]): number {
-    // Calculate dot product
-    const dotProduct = vecA.reduce(
-      (sum, value, index) => sum + value * vecB[index],
+  private cosineSimilarity(vectorA: number[], vectorB: number[]): number {
+    const dotProduct = vectorA.reduce(
+      (sum, value, index) => sum + value * (vectorB[index] || 0),
       0,
     );
 
-    // Calculate magnitudes
     const magnitudeA = Math.sqrt(
-      vecA.reduce((sum, value) => sum + value ** 2, 0),
+      vectorA.reduce((sum, value) => sum + value * value, 0),
     );
     const magnitudeB = Math.sqrt(
-      vecB.reduce((sum, value) => sum + value ** 2, 0),
+      vectorB.reduce((sum, value) => sum + value * value, 0),
     );
 
-    // Avoid division by zero
-    if (magnitudeA === 0 || magnitudeB === 0) {
-      return 0;
-    }
-
-    return dotProduct / (magnitudeA * magnitudeB);
+    return magnitudeA && magnitudeB
+      ? dotProduct / (magnitudeA * magnitudeB)
+      : 0;
   }
 
-  async calculateCosineSimilarity(
+  async calculateSimilaritiesForAllPosts(): Promise<void> {
+    const allPosts: ReviewPost[] = await this.postModel.find().exec();
+
+    // Build vocabulary and calculate term frequencies
+    this.buildVocabulary(allPosts);
+    this.calculateTermFrequency(allPosts);
+
+    // Calculate TF-IDF vectors
+    const tfIdfVectors = allPosts.map((_post, index) =>
+      this.calculateTfIdfVector(index),
+    );
+
+    // Calculate cosine similarity and save recommendations
+    for (let i = 0; i < tfIdfVectors.length; i++) {
+      for (let j = i + 1; j < tfIdfVectors.length; j++) {
+        const similarity = this.cosineSimilarity(
+          tfIdfVectors[i],
+          tfIdfVectors[j],
+        );
+
+        if (similarity > 0) {
+          await this.recommendationModel.create({
+            post1: allPosts[i]._id,
+            post2: allPosts[j]._id,
+            similarity,
+          });
+        }
+      }
+    }
+  }
+
+  async calculateCosineSimilarityBetweenPosts(
     postId1: string,
     postId2: string,
   ): Promise<number> {
+    const allPosts: ReviewPost[] = await this.postModel.find().exec();
     const post1 = await this.postModel.findById(postId1).exec();
     const post2 = await this.postModel.findById(postId2).exec();
 
     if (!post1 || !post2) {
-      throw new Error('Posts not found');
+      throw new Error('One or both posts not found');
     }
 
-    const vectorA = this.getPostVector(post1);
-    const vectorB = this.getPostVector(post2);
+    // Build vocabulary and term frequencies for the two posts
+    this.buildVocabulary(allPosts);
+    this.calculateTermFrequency(allPosts);
 
-    console.log('vectorA', vectorA);
+    const post1Index = allPosts.findIndex(
+      (post) => post._id.toString() === post1._id.toString(),
+    );
+
+    const post2Index = allPosts.findIndex(
+      (post) => post._id.toString() === post2._id.toString(),
+    );
+
+    // Calculate TF-IDF vectors for the posts
+    const vectorA = this.calculateTfIdfVector(post1Index); // First post
+    const vectorB = this.calculateTfIdfVector(post2Index); // Second post
 
     return this.cosineSimilarity(vectorA, vectorB);
   }
 
-  //   async recommendPosts(userId: string) {
-  //     const interactedPostIds =
-  //       await this.userInteractionService.getUserInteractions(userId);
+  async getSimilarPosts(postId: string): Promise<ReviewPost[]> {
+    const allPosts: ReviewPost[] = await this.postModel.find().exec();
+    const targetPost = await this.postModel.findById(postId).exec();
 
-  //     const allPosts = await this.postModel.find().exec();
+    if (!targetPost) {
+      throw new Error('Target post not found');
+    }
 
-  //     const filteredPosts = allPosts.filter(
-  //       (post) =>
-  //         !interactedPostIds.some(
-  //           (interactedId) => interactedId.toString() === post._id.toString(),
-  //         ),
-  //     );
+    // Build vocabulary and calculate term frequencies
+    this.buildVocabulary(allPosts);
+    this.calculateTermFrequency(allPosts);
 
-  //     if (filteredPosts.length === 0) {
-  //       return this.postModel.find().limit(5).exec();
-  //     }
+    // Calculate the TF-IDF vector for the target post
+    const targetIndex = allPosts.findIndex(
+      (post) => post._id.toString() === postId,
+    );
 
-  //     const userPosts =
-  //       await this.reviewPostsService.findManyByIds(interactedPostIds);
-  //     const similarities = userPosts.flatMap((userPost) =>
-  //       filteredPosts.map((post) => ({
-  //         post,
-  //         similarity: this.calculateCosineSimilarity(userPost, post),
-  //       })),
-  //     );
+    const targetVector = this.calculateTfIdfVector(targetIndex);
 
-  //     similarities.sort((a, b) => b.similarity - a.similarity);
-  //     const topRecommendations = similarities.slice(0, 5);
+    // Calculate cosine similarity with all other posts
+    const similarities = allPosts
+      .map((post, index) => {
+        if (post._id.toString() === postId) return null; // Skip the target post
+        const otherVector = this.calculateTfIdfVector(index);
+        const similarity = this.cosineSimilarity(targetVector, otherVector);
+        return { post: post, similarity };
+      })
+      .filter((result) => result !== null) as {
+      post: ReviewPost;
+      similarity: number;
+    }[];
 
-  //     const recommendationDocuments = topRecommendations.map((item) => ({
-  //       userId: new Types.ObjectId(userId),
-  //       postId: item.post._id,
-  //       similarity: item.similarity || 0,
-  //     }));
+    const top = similarities
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, 5);
 
-  //     await this.recommendationModel.insertMany(recommendationDocuments);
+    return Promise.all(
+      top.map(async (result) => {
+        const populatedPost = await this.postModel
+          .findById(result.post._id)
+          .populate('userId', 'name image')
+          .exec();
+        return populatedPost;
+      }),
+    );
+  }
 
-  //     return topRecommendations.map((item) => ({
-  //       post: item.post,
-  //       similarity: item.similarity,
-  //     }));
-  //   }
+  async getRecommendationsForUser(
+    userId: string,
+  ): Promise<{ post: ReviewPost; similarity: number }[]> {
+    const interactedPostIds =
+      await this.userInteractionService.getUserInteractions(userId);
+
+    if (interactedPostIds.length === 0) {
+      return [];
+    }
+
+    const userInteractions =
+      await this.reviewPostsService.findManyByIds(interactedPostIds);
+
+    const allPosts: ReviewPost[] = await this.postModel.find().exec();
+
+    const nonInteractedPosts = allPosts.filter(
+      (post) =>
+        !interactedPostIds.some(
+          (interactedId) => interactedId.toString() === post._id.toString(),
+        ),
+    );
+
+    // Build vocabulary and calculate term frequencies
+    this.buildVocabulary(allPosts);
+    this.calculateTermFrequency(allPosts);
+
+    // Calculate similarity between non-interacted posts and interacted posts
+    const recommendations = nonInteractedPosts.map((post) => {
+      const postVector = this.calculateTfIdfVector(allPosts.indexOf(post));
+
+      const highestSimilarity = Math.max(
+        ...userInteractions.map((interaction) => {
+          const interactedPost = allPosts.find(
+            (p) => p._id.toString() === interaction._id.toString(),
+          );
+          if (!interactedPost) return 0;
+
+          const interactedVector = this.calculateTfIdfVector(
+            allPosts.indexOf(interactedPost),
+          );
+          return this.cosineSimilarity(postVector, interactedVector);
+        }),
+      );
+
+      return { post, similarity: highestSimilarity };
+    });
+
+    // Sort by similarity in descending order and return the top 3 recommendations
+    const topRecommendations = recommendations
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, 3);
+
+    // Populate user details for the recommended posts
+    return Promise.all(
+      topRecommendations.map(async (recommendation) => {
+        const populatedPost = await this.postModel
+          .findById(recommendation.post._id)
+          .populate('userId', 'name image')
+          .exec();
+        return { post: populatedPost, similarity: recommendation.similarity };
+      }),
+    );
+  }
 }

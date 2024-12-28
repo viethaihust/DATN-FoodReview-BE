@@ -5,6 +5,7 @@ import { ReviewPost } from 'src/review-posts/schema/reviewPost.schema';
 import { UserInteractionService } from 'src/user-interaction/user-interaction.service';
 import { Recommendation } from './schema/recommendation.schema';
 import { ReviewPostsService } from 'src/review-posts/review-posts.service';
+// import * as fs from 'fs';
 
 @Injectable()
 export class RecommendationService {
@@ -22,9 +23,10 @@ export class RecommendationService {
 
   private tokenize(text: string): string[] {
     return text
-      .toLowerCase()
-      .split(/[^a-zA-Z0-9À-ſ]+/)
-      .filter((token) => token.trim().length > 0);
+      .replace(/<\/?[^>]+(>|$)/g, '') // Remove HTML tags
+      .toLowerCase() // Convert to lowercase
+      .split(/[^a-zA-Z0-9À-ỹ]+/u) // Tokenize using Unicode-aware regex for Vietnamese
+      .filter((token) => token.trim().length > 0); // Filter out empty tokens
   }
 
   private buildVocabulary(posts: ReviewPost[]): void {
@@ -178,6 +180,16 @@ export class RecommendationService {
     this.buildVocabulary(allPosts);
     this.calculateTermFrequency(allPosts);
 
+    // Log all tokenized terms to a file
+    // const termsLog = allPosts
+    //   .map((post, index) => {
+    //     const tokens = this.tokenize(`${post.title} ${post.content}`);
+    //     return `Post ID: ${post._id}\nTokens: ${tokens.join(', ')}\n`;
+    //   })
+    //   .join('\n');
+
+    // fs.writeFileSync('similar_posts_terms.log', termsLog);
+
     // Calculate the TF-IDF vector for the target post
     const targetIndex = allPosts.findIndex(
       (post) => post._id.toString() === postId,
@@ -200,7 +212,7 @@ export class RecommendationService {
 
     const top = similarities
       .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, 5);
+      .slice(0, 3);
 
     return Promise.all(
       top.map(async (result) => {
@@ -213,9 +225,7 @@ export class RecommendationService {
     );
   }
 
-  async getRecommendationsForUser(
-    userId: string,
-  ): Promise<{ post: ReviewPost; similarity: number }[]> {
+  async getRecommendationsForUser(userId: string): Promise<ReviewPost[]> {
     const interactedPostIds =
       await this.userInteractionService.getUserInteractions(userId);
 
@@ -263,7 +273,7 @@ export class RecommendationService {
     // Sort by similarity in descending order and return the top 3 recommendations
     const topRecommendations = recommendations
       .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, 3);
+      .slice(0, 4);
 
     // Populate user details for the recommended posts
     return Promise.all(
@@ -272,7 +282,7 @@ export class RecommendationService {
           .findById(recommendation.post._id)
           .populate('userId', 'name image')
           .exec();
-        return { post: populatedPost, similarity: recommendation.similarity };
+        return populatedPost;
       }),
     );
   }

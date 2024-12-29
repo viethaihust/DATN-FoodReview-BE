@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageModerationService } from './image-moderation.service';
+import { multerOptions } from 'src/utils/multer';
 
 @Controller('image-moderation')
 export class ImageModerationController {
@@ -15,7 +16,7 @@ export class ImageModerationController {
   ) {}
 
   @Post('analyze')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('image', multerOptions))
   async analyzeImage(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('File is required.');

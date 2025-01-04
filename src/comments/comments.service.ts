@@ -131,7 +131,7 @@ export class CommentsService {
     }
 
     const savedComment = await newComment.save();
-    return savedComment.populate('userId', 'name');
+    return savedComment.populate('userId', 'name image');
   }
 
   async like(id: string, userId: string): Promise<Comment> {

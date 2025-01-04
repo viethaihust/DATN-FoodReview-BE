@@ -3,7 +3,6 @@ import {
   IsNumber,
   ValidateNested,
   IsOptional,
-  IsMongoId,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -15,21 +14,21 @@ class LatLongDto {
   lng: number;
 }
 
-export class CreateLocationDto {
-  @IsMongoId()
-  userId: string;
-
+export class UpdateLocationDto {
+  @IsOptional()
   @IsString()
-  name: string;
-
-  @IsString()
-  address: string;
+  name?: string;
 
   @IsOptional()
   @IsString()
-  province: string;
+  address?: string;
 
+  @IsOptional()
+  @IsString()
+  province?: string;
+
+  @IsOptional()
   @ValidateNested()
   @Type(() => LatLongDto)
-  latLong: LatLongDto;
+  latLong?: LatLongDto;
 }

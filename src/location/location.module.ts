@@ -3,6 +3,7 @@ import { LocationService } from './location.service';
 import { LocationController } from './location.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Location, LocationSchema } from './schema/location.schema';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -11,6 +12,6 @@ import { Location, LocationSchema } from './schema/location.schema';
     ]),
   ],
   controllers: [LocationController],
-  providers: [LocationService],
+  providers: [LocationService, JwtService],
 })
 export class LocationModule {}

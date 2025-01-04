@@ -43,7 +43,7 @@ export class BookmarkService {
         path: 'postId',
         populate: {
           path: 'userId',
-          select: 'name',
+          select: 'name image',
         },
       })
       .exec();

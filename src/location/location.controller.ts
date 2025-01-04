@@ -1,11 +1,26 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { LocationService } from './location.service';
 import { CreateLocationDto } from './dto/createLocation.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
+import { JwtService } from '@nestjs/jwt';
+import { UpdateLocationDto } from './dto/updateLocation.dto';
 
 @Controller('location')
 export class LocationController {
-  constructor(private readonly locationService: LocationService) {}
+  constructor(
+    private readonly locationService: LocationService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   @Post()
   async createLocation(@Body() createLocationDto: CreateLocationDto) {
@@ -15,8 +30,14 @@ export class LocationController {
 
   @Public()
   @Get()
-  async findAllLocations() {
-    return this.locationService.findAll();
+  async findAllLocations(
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    const pageNumber = page ? Number(page) : undefined;
+    const pageSizeNumber = pageSize ? Number(pageSize) : undefined;
+
+    return this.locationService.findAll(pageNumber, pageSizeNumber);
   }
 
   @Public()
@@ -25,9 +46,50 @@ export class LocationController {
     return this.locationService.search(query);
   }
 
+  @Get('user')
+  async getUsersLocation(@Req() req: any) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      throw new UnauthorizedException('Authorization header is missing');
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decodedToken = this.jwtService.decode(token) as {
+      _id: string;
+      role: string;
+    };
+    return this.locationService.getUsersLocation(decodedToken._id);
+  }
+
   @Public()
   @Get(':id')
   async findOneLocation(@Param('id') id: string) {
     return this.locationService.findOne(id);
+  }
+
+  @Patch(':id')
+  async updateLocation(
+    @Param('id') id: string,
+    @Body() updateLocationDto: UpdateLocationDto,
+    @Req() req: any,
+  ) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      throw new UnauthorizedException('Authorization header is missing');
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decodedToken = this.jwtService.decode(token) as {
+      _id: string;
+      role: string;
+    };
+    return this.locationService.update(
+      id,
+      updateLocationDto,
+      decodedToken._id,
+      decodedToken.role,
+    );
   }
 }

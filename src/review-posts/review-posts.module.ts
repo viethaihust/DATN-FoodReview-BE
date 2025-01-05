@@ -15,6 +15,8 @@ import { Like, LikeSchema } from 'src/likes/schema/likes.schema';
 import { Follow, FollowSchema } from 'src/follows/schema/follow.schema';
 import { NotificationModule } from 'src/notification/notification.module';
 import { Location, LocationSchema } from 'src/location/schema/location.schema';
+import { Viewed, ViewedSchema } from 'src/viewed/schema/viewed.schema';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Module({
   imports: [
@@ -24,13 +26,14 @@ import { Location, LocationSchema } from 'src/location/schema/location.schema';
       { name: Bookmark.name, schema: BookmarkSchema },
       { name: Like.name, schema: LikeSchema },
       { name: Comment.name, schema: CommentSchema },
+      { name: Viewed.name, schema: ViewedSchema },
       { name: Notification.name, schema: NotificationSchema },
       { name: Follow.name, schema: FollowSchema },
       { name: Location.name, schema: LocationSchema },
     ]),
     NotificationModule,
   ],
-  providers: [ReviewPostsService, JwtService],
+  providers: [ReviewPostsService, JwtService, CloudinaryService],
   controllers: [ReviewPostsController],
 })
 export class ReviewPostsModule {}

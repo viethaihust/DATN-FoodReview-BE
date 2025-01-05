@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RecommendationService } from './recommendation.service';
 import { RecommendationController } from './recommendation.controller';
-import { ReviewPostsService } from 'src/review-posts/review-posts.service';
 import { UserInteractionService } from 'src/user-interaction/user-interaction.service';
 import {
   ReviewPost,
@@ -42,10 +41,6 @@ import {
     NotificationModule,
   ],
   controllers: [RecommendationController],
-  providers: [
-    RecommendationService,
-    ReviewPostsService,
-    UserInteractionService,
-  ],
+  providers: [RecommendationService, UserInteractionService],
 })
 export class RecommendationModule {}

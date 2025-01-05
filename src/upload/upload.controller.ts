@@ -1,5 +1,7 @@
 import {
+  Body,
   Controller,
+  Delete,
   Post,
   UnprocessableEntityException,
   UploadedFile,
@@ -53,5 +55,16 @@ export class UploadController {
     }
 
     return await this.cloudinaryService.uploadFiles(files);
+  }
+
+  @Delete('delete-files')
+  async deleteFiles(@Body('publicIds') publicIds: string[]) {
+    if (!publicIds || publicIds.length === 0) {
+      throw new UnprocessableEntityException(
+        'Vui lòng cung cấp ít nhất một tệp để xóa.',
+      );
+    }
+
+    return await this.cloudinaryService.deleteFiles(publicIds);
   }
 }

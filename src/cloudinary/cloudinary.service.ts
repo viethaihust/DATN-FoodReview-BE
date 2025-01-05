@@ -9,9 +9,10 @@ export class CloudinaryService {
   private optimizeImage(buffer: Buffer): Promise<Buffer> {
     return sharp(buffer)
       .resize({
-        width: 1920,
+        width: 2560,
         fit: 'inside',
       })
+      .jpeg({ quality: 100 })
       .toBuffer();
   }
 
@@ -44,12 +45,16 @@ export class CloudinaryService {
     return this.uploadStream(file);
   }
 
-  deleteFile(publicId: string): Promise<CloudinaryResponse> {
+  async deleteFile(publicId: string): Promise<CloudinaryResponse> {
     return new Promise<CloudinaryResponse>((resolve, reject) => {
-      cloudinary.uploader.destroy(publicId, (error, result) => {
-        if (error) return reject(error);
-        resolve(result);
-      });
+      cloudinary.uploader.destroy(
+        publicId,
+        { resource_type: 'video' },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        },
+      );
     });
   }
 

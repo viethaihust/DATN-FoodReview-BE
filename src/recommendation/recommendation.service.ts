@@ -4,17 +4,15 @@ import { Model } from 'mongoose';
 import { ReviewPost } from 'src/review-posts/schema/reviewPost.schema';
 import { UserInteractionService } from 'src/user-interaction/user-interaction.service';
 import { Recommendation } from './schema/recommendation.schema';
-import { ReviewPostsService } from 'src/review-posts/review-posts.service';
 // import * as fs from 'fs';
 
 @Injectable()
 export class RecommendationService {
   constructor(
-    @InjectModel(ReviewPost.name) private postModel: Model<ReviewPost>,
+    @InjectModel(ReviewPost.name) private reviewPostModel: Model<ReviewPost>,
     @InjectModel(Recommendation.name)
     private readonly recommendationModel: Model<Recommendation>,
     private readonly userInteractionService: UserInteractionService,
-    private readonly reviewPostsService: ReviewPostsService,
   ) {}
 
   private globalVocabulary: Set<string> = new Set();
@@ -107,7 +105,7 @@ export class RecommendationService {
   }
 
   async calculateSimilaritiesForAllPosts(): Promise<void> {
-    const allPosts: ReviewPost[] = await this.postModel.find().exec();
+    const allPosts: ReviewPost[] = await this.reviewPostModel.find().exec();
 
     // Build vocabulary and calculate term frequencies
     this.buildVocabulary(allPosts);
@@ -141,9 +139,9 @@ export class RecommendationService {
     postId1: string,
     postId2: string,
   ): Promise<number> {
-    const allPosts: ReviewPost[] = await this.postModel.find().exec();
-    const post1 = await this.postModel.findById(postId1).exec();
-    const post2 = await this.postModel.findById(postId2).exec();
+    const allPosts: ReviewPost[] = await this.reviewPostModel.find().exec();
+    const post1 = await this.reviewPostModel.findById(postId1).exec();
+    const post2 = await this.reviewPostModel.findById(postId2).exec();
 
     if (!post1 || !post2) {
       throw new Error('One or both posts not found');
@@ -169,8 +167,8 @@ export class RecommendationService {
   }
 
   async getSimilarPosts(postId: string): Promise<ReviewPost[]> {
-    const allPosts: ReviewPost[] = await this.postModel.find().exec();
-    const targetPost = await this.postModel.findById(postId).exec();
+    const allPosts: ReviewPost[] = await this.reviewPostModel.find().exec();
+    const targetPost = await this.reviewPostModel.findById(postId).exec();
 
     if (!targetPost) {
       throw new Error('Target post not found');
@@ -216,7 +214,7 @@ export class RecommendationService {
 
     return Promise.all(
       top.map(async (result) => {
-        const populatedPost = await this.postModel
+        const populatedPost = await this.reviewPostModel
           .findById(result.post._id)
           .populate('userId', 'name image')
           .exec();
@@ -233,10 +231,14 @@ export class RecommendationService {
       return [];
     }
 
-    const userInteractions =
-      await this.reviewPostsService.findManyByIds(interactedPostIds);
+    const userInteractions = await this.reviewPostModel
+      .find({ _id: { $in: interactedPostIds } })
+      .populate('userId', 'name image')
+      .populate('categoryId')
+      .populate('locationId')
+      .exec();
 
-    const allPosts: ReviewPost[] = await this.postModel.find().exec();
+    const allPosts: ReviewPost[] = await this.reviewPostModel.find().exec();
 
     const nonInteractedPosts = allPosts.filter(
       (post) =>
@@ -278,7 +280,7 @@ export class RecommendationService {
     // Populate user details for the recommended posts
     return Promise.all(
       topRecommendations.map(async (recommendation) => {
-        const populatedPost = await this.postModel
+        const populatedPost = await this.reviewPostModel
           .findById(recommendation.post._id)
           .populate('userId', 'name image')
           .exec();

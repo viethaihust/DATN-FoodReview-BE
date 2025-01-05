@@ -18,6 +18,9 @@ import { Follow } from 'src/follows/schema/follow.schema';
 import { NotificationService } from 'src/notification/notification.service';
 import { NotificationGateway } from 'src/notification/notification.gateway';
 import { Location } from 'src/location/schema/location.schema';
+import { Viewed } from 'src/viewed/schema/viewed.schema';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { extractPublicId } from 'cloudinary-build-url';
 
 @Injectable()
 export class ReviewPostsService {
@@ -28,6 +31,7 @@ export class ReviewPostsService {
     @InjectModel(Bookmark.name) private readonly bookmarkModel: Model<Bookmark>,
     @InjectModel(Like.name) private readonly likeModel: Model<Like>,
     @InjectModel(Comment.name) private readonly commentModel: Model<Comment>,
+    @InjectModel(Viewed.name) private readonly viewedModel: Model<Viewed>,
     @InjectModel(Notification.name)
     private readonly notificationModel: Model<Notification>,
     @InjectModel(Follow.name)
@@ -35,6 +39,7 @@ export class ReviewPostsService {
     @InjectModel(Location.name) private readonly locationModel: Model<Location>,
     private readonly notificationService: NotificationService,
     private readonly notificationGateway: NotificationGateway,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   async createReviewPost(
@@ -156,15 +161,6 @@ export class ReviewPostsService {
     return post;
   }
 
-  async findManyByIds(postIds: Types.ObjectId[]): Promise<ReviewPost[]> {
-    return this.reviewPostModel
-      .find({ _id: { $in: postIds } })
-      .populate('userId', 'name image')
-      .populate('categoryId')
-      .populate('locationId')
-      .exec();
-  }
-
   async search(query: string) {
     const regex = new RegExp(query, 'i');
 
@@ -216,6 +212,16 @@ export class ReviewPostsService {
 
     const oldLocationId = post.locationId;
     const oldRating = post.ratings.overall;
+
+    const oldPublicIds = post.files
+      ? post.files.map((file) => extractPublicId(file))
+      : [];
+
+    console.log('oldPublicIds', oldPublicIds);
+
+    if (post.files && post.files.length > 0) {
+      await this.cloudinaryService.deleteFiles(oldPublicIds);
+    }
 
     const updatedPost = await this.reviewPostModel
       .findByIdAndUpdate(
@@ -335,7 +341,18 @@ export class ReviewPostsService {
       this.likeModel.deleteMany({ postId: objectIdPost }),
       this.commentModel.deleteMany({ postId: objectIdPost }),
       this.notificationModel.deleteMany({ postId: objectIdPost }),
+      this.viewedModel.deleteMany({ postId: objectIdPost }),
     ]);
+
+    const oldPublicIds = post.files
+      ? post.files.map((file) => extractPublicId(file))
+      : [];
+
+    console.log('oldPublicIds', oldPublicIds);
+
+    if (post.files && post.files.length > 0) {
+      await this.cloudinaryService.deleteFiles(oldPublicIds);
+    }
 
     await this.reviewPostModel.findByIdAndDelete(objectIdPost).exec();
 

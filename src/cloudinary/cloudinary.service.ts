@@ -1,12 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryResponse } from './types/cloudinary-response';
-
+import * as sharp from 'sharp';
 const streamifier = require('streamifier');
 
 @Injectable()
 export class CloudinaryService {
-  uploadFile(file: Express.Multer.File): Promise<CloudinaryResponse> {
+  private optimizeImage(buffer: Buffer): Promise<Buffer> {
+    return sharp(buffer)
+      .resize({
+        width: 1920,
+        fit: 'inside',
+      })
+      .toBuffer();
+  }
+
+  private uploadStream(file: Express.Multer.File): Promise<CloudinaryResponse> {
     return new Promise<CloudinaryResponse>((resolve, reject) => {
       const resourceType = file.mimetype.startsWith('video/')
         ? 'video'
@@ -22,6 +31,17 @@ export class CloudinaryService {
 
       streamifier.createReadStream(file.buffer).pipe(uploadStream);
     });
+  }
+
+  async uploadFile(file: Express.Multer.File): Promise<CloudinaryResponse> {
+    const resourceType = file.mimetype.startsWith('video/') ? 'video' : 'image';
+
+    if (resourceType === 'image') {
+      const optimizedBuffer = await this.optimizeImage(file.buffer);
+      file.buffer = optimizedBuffer;
+    }
+
+    return this.uploadStream(file);
   }
 
   deleteFile(publicId: string): Promise<CloudinaryResponse> {

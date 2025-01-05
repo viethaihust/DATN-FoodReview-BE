@@ -242,6 +242,7 @@ export class RecommendationService {
 
     const nonInteractedPosts = allPosts.filter(
       (post) =>
+        post.userId.toString() !== userId &&
         !interactedPostIds.some(
           (interactedId) => interactedId.toString() === post._id.toString(),
         ),

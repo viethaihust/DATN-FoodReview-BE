@@ -217,8 +217,6 @@ export class ReviewPostsService {
       ? post.files.map((file) => extractPublicId(file))
       : [];
 
-    console.log('oldPublicIds', oldPublicIds);
-
     if (post.files && post.files.length > 0) {
       await this.cloudinaryService.deleteFiles(oldPublicIds);
     }
@@ -347,8 +345,6 @@ export class ReviewPostsService {
     const oldPublicIds = post.files
       ? post.files.map((file) => extractPublicId(file))
       : [];
-
-    console.log('oldPublicIds', oldPublicIds);
 
     if (post.files && post.files.length > 0) {
       await this.cloudinaryService.deleteFiles(oldPublicIds);

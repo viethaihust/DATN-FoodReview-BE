@@ -45,11 +45,14 @@ export class CloudinaryService {
     return this.uploadStream(file);
   }
 
-  async deleteFile(publicId: string): Promise<CloudinaryResponse> {
+  async deleteFile(
+    publicId: string,
+    resourceType: 'image' | 'video' | 'raw' = 'image',
+  ): Promise<CloudinaryResponse> {
     return new Promise<CloudinaryResponse>((resolve, reject) => {
       cloudinary.uploader.destroy(
         publicId,
-        { resource_type: 'video' },
+        { resource_type: resourceType },
         (error, result) => {
           if (error) return reject(error);
           resolve(result);

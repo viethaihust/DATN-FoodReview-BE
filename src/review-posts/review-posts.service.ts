@@ -21,6 +21,7 @@ import { Location } from 'src/location/schema/location.schema';
 import { Viewed } from 'src/viewed/schema/viewed.schema';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { extractPublicId } from 'cloudinary-build-url';
+import extractResourceType from 'src/utils/extractResourceType';
 
 @Injectable()
 export class ReviewPostsService {
@@ -217,8 +218,12 @@ export class ReviewPostsService {
       ? post.files.map((file) => extractPublicId(file))
       : [];
 
+    const resourceTypes = post.files
+      ? post.files.map((file) => extractResourceType(file))
+      : [];
+
     if (post.files && post.files.length > 0) {
-      await this.cloudinaryService.deleteFiles(oldPublicIds);
+      await this.cloudinaryService.deleteFiles(oldPublicIds, resourceTypes);
     }
 
     const updatedPost = await this.reviewPostModel
@@ -346,8 +351,12 @@ export class ReviewPostsService {
       ? post.files.map((file) => extractPublicId(file))
       : [];
 
+    const resourceTypes = post.files
+      ? post.files.map((file) => extractResourceType(file))
+      : [];
+
     if (post.files && post.files.length > 0) {
-      await this.cloudinaryService.deleteFiles(oldPublicIds);
+      await this.cloudinaryService.deleteFiles(oldPublicIds, resourceTypes);
     }
 
     await this.reviewPostModel.findByIdAndDelete(objectIdPost).exec();

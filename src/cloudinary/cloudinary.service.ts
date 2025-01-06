@@ -47,7 +47,7 @@ export class CloudinaryService {
 
   async deleteFile(
     publicId: string,
-    resourceType: 'image' | 'video' | 'raw' = 'image',
+    resourceType: string,
   ): Promise<CloudinaryResponse> {
     return new Promise<CloudinaryResponse>((resolve, reject) => {
       cloudinary.uploader.destroy(
@@ -68,10 +68,13 @@ export class CloudinaryService {
     return Promise.all(uploadPromises);
   }
 
-  async deleteFiles(publicIds: string[]): Promise<CloudinaryResponse[]> {
-    const deletePromises = publicIds.map((publicId) =>
-      this.deleteFile(publicId),
-    );
+  async deleteFiles(
+    publicIds: string[],
+    resourceTypes: string[],
+  ): Promise<CloudinaryResponse[]> {
+    const deletePromises = publicIds.map((publicId, index) => {
+      return this.deleteFile(publicId, resourceTypes[index]);
+    });
     return Promise.all(deletePromises);
   }
 }

@@ -2,7 +2,6 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateLocationDto } from './dto/createLocation.dto';
@@ -10,6 +9,14 @@ import { Model, Types } from 'mongoose';
 import { Location } from './schema/location.schema';
 import { UpdateLocationDto } from './dto/updateLocation.dto';
 import { ReviewPost } from 'src/review-posts/schema/reviewPost.schema';
+import { Bookmark } from 'src/bookmark/schema/bookmark.schema';
+import { Like } from 'src/likes/schema/likes.schema';
+import { Comment } from 'src/comments/schema/comment.schema';
+import { Viewed } from 'src/viewed/schema/viewed.schema';
+import { Notification } from 'src/notification/schema/notification.schema';
+import { extractPublicId } from 'cloudinary-build-url';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import extractResourceType from 'src/utils/extractResourceType';
 
 @Injectable()
 export class LocationService {
@@ -17,6 +24,13 @@ export class LocationService {
     @InjectModel(Location.name) private readonly locationModel: Model<Location>,
     @InjectModel(ReviewPost.name)
     private readonly reviewPostModel: Model<ReviewPost>,
+    @InjectModel(Bookmark.name) private readonly bookmarkModel: Model<Bookmark>,
+    @InjectModel(Like.name) private readonly likeModel: Model<Like>,
+    @InjectModel(Comment.name) private readonly commentModel: Model<Comment>,
+    @InjectModel(Viewed.name) private readonly viewedModel: Model<Viewed>,
+    @InjectModel(Notification.name)
+    private readonly notificationModel: Model<Notification>,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   async create(createLocationDto: CreateLocationDto): Promise<Location> {
@@ -143,7 +157,28 @@ export class LocationService {
         );
       }
     } else if (userRole === 'admin') {
-      await this.reviewPostModel.deleteMany({ locationId: locationObjectId });
+      for (const post of associatedPosts) {
+        const objectIdPost = new Types.ObjectId(post._id as string);
+        await Promise.all([
+          this.bookmarkModel.deleteMany({ postId: objectIdPost }),
+          this.likeModel.deleteMany({ postId: objectIdPost }),
+          this.commentModel.deleteMany({ postId: objectIdPost }),
+          this.notificationModel.deleteMany({ postId: objectIdPost }),
+          this.viewedModel.deleteMany({ postId: objectIdPost }),
+        ]);
+        const oldPublicIds = post.files
+          ? post.files.map((file) => extractPublicId(file))
+          : [];
+
+        const resourceTypes = post.files
+          ? post.files.map((file) => extractResourceType(file))
+          : [];
+
+        if (post.files && post.files.length > 0) {
+          await this.cloudinaryService.deleteFiles(oldPublicIds, resourceTypes);
+        }
+        await this.reviewPostModel.findByIdAndDelete(objectIdPost).exec();
+      }
     } else {
       throw new ForbiddenException('Invalid role');
     }

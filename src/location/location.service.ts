@@ -9,11 +9,14 @@ import { CreateLocationDto } from './dto/createLocation.dto';
 import { Model, Types } from 'mongoose';
 import { Location } from './schema/location.schema';
 import { UpdateLocationDto } from './dto/updateLocation.dto';
+import { ReviewPost } from 'src/review-posts/schema/reviewPost.schema';
 
 @Injectable()
 export class LocationService {
   constructor(
     @InjectModel(Location.name) private readonly locationModel: Model<Location>,
+    @InjectModel(ReviewPost.name)
+    private readonly reviewPostModel: Model<ReviewPost>,
   ) {}
 
   async create(createLocationDto: CreateLocationDto): Promise<Location> {
@@ -47,18 +50,33 @@ export class LocationService {
     page?: number,
     pageSize?: number,
   ): Promise<{ locations: Location[]; totalLocations: number }> {
-    if (!page || !pageSize) {
-      const locations = await this.locationModel.find().exec();
-      const totalLocations = locations.length;
-      return { locations, totalLocations };
-    }
+    const skip = (page - 1) * pageSize || 0;
 
-    const skip = (page - 1) * pageSize;
+    const locations = await this.locationModel
+      .aggregate([
+        { $skip: skip },
+        { $limit: pageSize || Number.MAX_SAFE_INTEGER },
+        {
+          $lookup: {
+            from: 'reviewposts',
+            localField: '_id',
+            foreignField: 'locationId',
+            as: 'associatedPosts',
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            address: 1,
+            latLong: 1,
+            associatedPostsCount: { $size: '$associatedPosts' },
+          },
+        },
+      ])
+      .exec();
 
-    const [locations, totalLocations] = await Promise.all([
-      this.locationModel.find().skip(skip).limit(pageSize).exec(),
-      this.locationModel.countDocuments().exec(),
-    ]);
+    const totalLocations = await this.locationModel.countDocuments().exec();
 
     return { locations, totalLocations };
   }
@@ -93,5 +111,45 @@ export class LocationService {
     );
 
     return updatedLocation;
+  }
+
+  async deleteLocation(
+    locationId: string,
+    userId: string,
+    userRole: string,
+  ): Promise<{ message: string }> {
+    const location = await this.locationModel.findById(locationId);
+
+    if (!location) {
+      throw new NotFoundException('Location not found');
+    }
+
+    const locationObjectId = new Types.ObjectId(locationId);
+
+    const associatedPosts = await this.reviewPostModel.find({
+      locationId: locationObjectId,
+    });
+
+    if (userRole === 'user') {
+      if (location.userId.toString() !== userId) {
+        throw new ForbiddenException(
+          'You are not authorized to delete this location',
+        );
+      }
+
+      if (associatedPosts.length > 0) {
+        throw new ForbiddenException(
+          `Không thể xóa địa điểm vì có ${associatedPosts.length} bài đăng liên quan đến địa điểm này`,
+        );
+      }
+    } else if (userRole === 'admin') {
+      await this.reviewPostModel.deleteMany({ locationId: locationObjectId });
+    } else {
+      throw new ForbiddenException('Invalid role');
+    }
+
+    await this.locationModel.findByIdAndDelete(locationId);
+
+    return { message: 'Location deleted successfully' };
   }
 }

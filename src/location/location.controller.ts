@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -88,6 +89,27 @@ export class LocationController {
     return this.locationService.update(
       id,
       updateLocationDto,
+      decodedToken._id,
+      decodedToken.role,
+    );
+  }
+
+  @Delete(':id')
+  async deleteLocation(@Param('id') id: string, @Req() req: any) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      throw new UnauthorizedException('Authorization header is missing');
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decodedToken = this.jwtService.decode(token) as {
+      _id: string;
+      role: string;
+    };
+
+    return this.locationService.deleteLocation(
+      id,
       decodedToken._id,
       decodedToken.role,
     );

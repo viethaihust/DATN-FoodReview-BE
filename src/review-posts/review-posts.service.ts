@@ -102,14 +102,10 @@ export class ReviewPostsService {
     pageSize: number;
     totalPosts: number;
   }> {
-    const {
-      page = 1,
-      pageSize = 5,
-      userId,
-      categoryId,
-      locationId,
-      province,
-    } = findAllReviewPostDto;
+    const { page, pageSize, userId, categoryId, locationId, province } =
+      findAllReviewPostDto;
+
+    const skip = (page - 1) * pageSize || 0;
 
     const query: any = {};
 
@@ -141,8 +137,8 @@ export class ReviewPostsService {
       .populate('categoryId')
       .populate('locationId')
       .populate('userId', 'name image')
-      .skip((page - 1) * pageSize)
-      .limit(pageSize)
+      .skip(skip)
+      .limit(pageSize || Number.MAX_SAFE_INTEGER)
       .sort({ createdAt: -1 })
       .exec();
 
@@ -211,7 +207,8 @@ export class ReviewPostsService {
     }
 
     const { userId, categoryId, locationId, ratings } = updateData;
-    const objectIdUser = new Types.ObjectId(userId);
+    const updatedUserId =
+      decodedUserRole === 'admin' ? post.userId : new Types.ObjectId(userId);
     const objectIdCategory = new Types.ObjectId(categoryId);
     const objectIdLocation = new Types.ObjectId(locationId);
 
@@ -235,7 +232,7 @@ export class ReviewPostsService {
         postId,
         {
           ...updateData,
-          userId: objectIdUser,
+          userId: updatedUserId,
           categoryId: objectIdCategory,
           locationId: objectIdLocation,
         },

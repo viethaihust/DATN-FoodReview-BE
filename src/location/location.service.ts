@@ -79,12 +79,33 @@ export class LocationService {
           },
         },
         {
+          $addFields: {
+            associatedPostsCount: { $size: '$associatedPosts' },
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'userId',
+          },
+        },
+        {
+          $addFields: {
+            userId: { $arrayElemAt: ['$userId', 0] },
+          },
+        },
+        {
           $project: {
             _id: 1,
             name: 1,
             address: 1,
             latLong: 1,
-            associatedPostsCount: { $size: '$associatedPosts' },
+            associatedPostsCount: 1,
+            'userId._id': 1,
+            'userId.name': 1,
+            'userId.image': 1,
           },
         },
       ])

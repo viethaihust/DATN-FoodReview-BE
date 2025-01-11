@@ -104,7 +104,7 @@ export class LocationService {
             latLong: 1,
             associatedPostsCount: 1,
             'userId._id': 1,
-            'userId.name': 1,
+            'userId.email': 1,
             'userId.image': 1,
           },
         },

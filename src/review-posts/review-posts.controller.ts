@@ -81,7 +81,10 @@ export class ReviewPostsController {
     }
 
     const token = authHeader.split(' ')[1];
-    const decodedToken = this.jwtService.decode(token) as { _id: string };
+    const decodedToken = this.jwtService.decode(token) as {
+      _id: string;
+      role: string;
+    };
 
     if (!decodedToken) {
       throw new UnauthorizedException('Invalid token');
@@ -90,6 +93,7 @@ export class ReviewPostsController {
     const updatedPost = await this.reviewPostsService.updatePost(
       postId,
       decodedToken._id,
+      decodedToken.role,
       updateReviewPostDto,
     );
 

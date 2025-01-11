@@ -6,14 +6,18 @@ const streamifier = require('streamifier');
 
 @Injectable()
 export class CloudinaryService {
-  private optimizeImage(buffer: Buffer): Promise<Buffer> {
-    return sharp(buffer)
-      .resize({
-        width: 2560,
-        fit: 'inside',
-      })
-      .jpeg({ quality: 100 })
-      .toBuffer();
+  private async optimizeImage(buffer: Buffer): Promise<Buffer> {
+    const metadata = await sharp(buffer).metadata();
+
+    const sharpInstance =
+      metadata.width && metadata.width > 2560
+        ? sharp(buffer).resize({
+            width: 2560,
+            fit: 'inside',
+          })
+        : sharp(buffer);
+
+    return await sharpInstance.jpeg().toBuffer();
   }
 
   private uploadStream(file: Express.Multer.File): Promise<CloudinaryResponse> {

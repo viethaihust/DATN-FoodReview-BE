@@ -25,7 +25,7 @@ export class UsersController {
   @Public()
   @Get(':id')
   async getUserProfile(@Param('id') id: string) {
-    return await this.usersService.findById(id);
+    return await this.usersService.findUserProfileById(id);
   }
 
   @Roles('admin')

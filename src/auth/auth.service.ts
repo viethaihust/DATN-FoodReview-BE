@@ -93,10 +93,9 @@ export class AuthService {
       const newUser = {
         name: dto.name,
         email: dto.email,
-        password: '',
         image: dto.image,
       };
-      user = await this.usersService.create(newUser);
+      user = await this.usersService.createGoogleUser(newUser);
     }
 
     const payload = {

@@ -7,7 +7,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from 'src/users/schema/user.schema';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './guards/roles.guard';
-import { JwtGuard } from './guards/jwt.guard';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Module({
   imports: [
@@ -23,6 +23,7 @@ import { JwtGuard } from './guards/jwt.guard';
     AuthService,
     JwtService,
     UsersService,
+    CloudinaryService,
     {
       provide: APP_GUARD,
       useClass: RolesGuard,

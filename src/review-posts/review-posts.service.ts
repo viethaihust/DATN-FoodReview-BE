@@ -194,6 +194,7 @@ export class ReviewPostsService {
   async updatePost(
     postId: string,
     decodedUserId: string,
+    decodedUserRole: string,
     updateData: UpdateReviewPostDto,
   ): Promise<ReviewPost> {
     const post = await this.reviewPostModel.findById(postId);
@@ -202,7 +203,10 @@ export class ReviewPostsService {
       throw new NotFoundException('Không tìm thấy bài post');
     }
 
-    if (post.userId.toString() !== decodedUserId) {
+    if (
+      decodedUserRole !== 'admin' &&
+      post.userId.toString() !== decodedUserId
+    ) {
       throw new UnauthorizedException('Bạn không có quyền sửa bài post này');
     }
 

@@ -120,15 +120,18 @@ export class ReviewPostsService {
       query.locationId = new Types.ObjectId(locationId);
     }
 
-    const locationFilter =
-      province && province !== 'Toàn quốc' ? { province } : {};
+    if (province) {
+      const decodedProvince = decodeURIComponent(province);
+      const matchingLocations = await this.locationModel
+        .find({ province: decodedProvince })
+        .select('_id')
+        .exec();
+
+      query.locationId = { $in: matchingLocations.map((loc) => loc._id) };
+    }
 
     const totalPosts = await this.reviewPostModel
       .find(query)
-      .populate({
-        path: 'locationId',
-        match: locationFilter,
-      })
       .countDocuments()
       .exec();
 

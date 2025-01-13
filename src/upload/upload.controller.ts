@@ -40,7 +40,7 @@ export class UploadController {
   }
 
   @Post('many-files')
-  @UseInterceptors(FilesInterceptor('files', 6, multerOptions))
+  @UseInterceptors(FilesInterceptor('files', undefined, multerOptions))
   async uploadManyFiles(@UploadedFiles() files: Express.Multer.File[]) {
     if (!files || files.length === 0) {
       throw new UnprocessableEntityException(

@@ -42,7 +42,7 @@ export const multerLocalOptions = {
 
 export const multerOptions = {
   limits: {
-    fileSize: 1024 * 1024 * 20, // 20 MB
+    fileSize: 1024 * 1024 * 50, // 50 MB
   },
   fileFilter: (req, file, cb) => {
     const allowedMimeTypes = [
